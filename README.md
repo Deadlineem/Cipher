@@ -1,6 +1,5 @@
 # 🔐 Cipher - Mod Manager, Downloader & Injector
 
-![GitHub Release](https://img.shields.io/github/v/release/Deadlineem/Cipher)
 ![GitHub Downloads](https://img.shields.io/github/downloads/Deadlineem/Cipher/total)
 ![License](https://img.shields.io/github/license/Deadlineem/Cipher)
 ![Platform](https://img.shields.io/badge/platform-x64%20%7C%20x86-blue)
@@ -54,10 +53,10 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 
 1. Visit the [Releases](https://github.com/Deadlineem/Cipher/releases) page
 2. Download the correct version for your system:
-   - **[Cipher_x64.zip](https://github.com/Deadlineem/Cipher/releases/latest)** - For 64-bit games (recommended for most users)
-   - **[Cipher_x86.zip](https://github.com/Deadlineem/Cipher/releases/latest)** - For 32-bit games
-3. Extract the ZIP file to any folder
-4. Run `Cipher.exe` as Administrator (right-click → "Run as administrator")
+   - **[Cipher_x64.zip]([https://github.com/Deadlineem/Cipher/releases/latest](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x64.exe))** - For 64-bit games (recommended for most users)
+   - **[Cipher_x86.zip]([https://github.com/Deadlineem/Cipher/releases/latest](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x86.exe))** - For 32-bit games
+3. Add an Exclusion to your Anti-Virus software for Cipher_(x86 | x64).exe `(It uses CreateRemoteThread() so it sends false positives, its safe and open source, check the code!)`
+4. Run `Cipher_x64.exe` OR `Cipher_x86.exe` as Administrator (right-click → "Run as administrator")
 
 ### Option 2: Build from Source
 

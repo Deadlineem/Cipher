@@ -1,4 +1,4 @@
-name: Build and Release Cipher
+name: Build and Release Cipher (Single EXE)
 
 on:
   push:
@@ -35,17 +35,13 @@ jobs:
     - name: Restore NuGet packages
       run: nuget restore Cipher.sln
 
-    - name: Publish x64 as Single EXE
+    - name: Build x64 Release with Debug Symbols
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=bin\x64\Release /verbosity:minimal
-        # Copy and rename the EXE
-        Copy-Item "Cipher\bin\x64\Release\Cipher.exe" "Cipher_x64.exe" -Force
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:DebugSymbols=true /p:DebugType=full /verbosity:detailed
 
-    - name: Publish x86 as Single EXE
+    - name: Build x86 Release with Debug Symbols
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:OutputPath=bin\x86\Release /verbosity:minimal
-        # Copy and rename the EXE
-        Copy-Item "Cipher\bin\x86\Release\Cipher.exe" "Cipher_x86.exe" -Force
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:DebugSymbols=true /p:DebugType=full /verbosity:detailed
 
     - name: Create README file
       shell: pwsh
@@ -59,24 +55,78 @@ jobs:
         Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
         Build Hash: ${{ github.sha }}
         
-        ## 🚀 Files
+        ## 🚀 Download (Single EXE - No installation required)
         - **Cipher_x64.exe** - For 64-bit games (RDR2, GTA5 Enhanced, modern games)
         - **Cipher_x86.exe** - For 32-bit games (GTA5 Legacy, older games)
+        
+        ## 📦 How to Use
+        1. Download the correct EXE for your system
+        2. Run as Administrator (right-click → Run as administrator)
+        3. Click "Add Mod" to add your mods
+        4. Click "Download" to download mod DLLs
+        5. Click "Inject" to inject into running games
         
         ## ⚠️ Important
         1. **Run as Administrator** - Required for DLL injection
         2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
         3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
         
-        ## 🛠️ Usage
-        1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
-        2. Click "Add Mod" to add your mods
-        3. Click "Download" to download mod DLLs
-        4. Click "Inject" to inject into running games
+        ## 🛡️ Antivirus Exclusion
+        Add an exclusion for: `%APPDATA%\Cipher`
         
         For help, click the "Help" button in the app.
         "@
         $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
+
+    - name: Copy Single EXE (x64)
+      shell: pwsh
+      run: |
+        # Find the x64 release folder
+        $x64Path = if (Test-Path "Cipher\bin\x64\Release") { "Cipher\bin\x64\Release" } 
+                   elseif (Test-Path "bin\x64\Release") { "bin\x64\Release" }
+                   else { 
+                     Write-Host "❌ x64 release folder not found!"
+                     exit 1
+                   }
+        
+        Write-Host "✅ x64 path: $x64Path"
+        
+        # Verify the EXE exists
+        if (Test-Path "$x64Path\Cipher.exe") {
+            Write-Host "✅ Cipher.exe found"
+            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force
+            $size = (Get-Item "Cipher_x64.exe").Length
+            Write-Host "📊 EXE size: $size bytes"
+        } else {
+            Write-Host "❌ Cipher.exe NOT found!"
+            Get-ChildItem $x64Path\
+            exit 1
+        }
+
+    - name: Copy Single EXE (x86)
+      shell: pwsh
+      run: |
+        # Find the x86 release folder
+        $x86Path = if (Test-Path "Cipher\bin\x86\Release") { "Cipher\bin\x86\Release" } 
+                   elseif (Test-Path "bin\x86\Release") { "bin\x86\Release" }
+                   else { 
+                     Write-Host "❌ x86 release folder not found!"
+                     exit 1
+                   }
+        
+        Write-Host "✅ x86 path: $x86Path"
+        
+        # Verify the EXE exists
+        if (Test-Path "$x86Path\Cipher.exe") {
+            Write-Host "✅ Cipher.exe found"
+            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force
+            $size = (Get-Item "Cipher_x86.exe").Length
+            Write-Host "📊 EXE size: $size bytes"
+        } else {
+            Write-Host "❌ Cipher.exe NOT found!"
+            Get-ChildItem $x86Path\
+            exit 1
+        }
 
     - name: Upload x64 EXE Artifact
       uses: actions/upload-artifact@v4
@@ -144,14 +194,13 @@ jobs:
         body: |
           # 🔐 Cipher Nightly Build #${{ github.run_number }}
 
-          ## 🚀 Download
+          ## 🚀 Download (Single EXE - No installation required)
           - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.exe)** - For 64-bit games (recommended)
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
           - **Build Number:** #${{ github.run_number }}
           - **Commit:** ${{ github.sha }}
-          - **Branch:** ${{ github.ref_name }}
           - **Trigger:** ${{ github.event_name }}
 
           ## ⚠️ Important
@@ -164,6 +213,9 @@ jobs:
           2. Click "Add Mod" to add your mods
           3. Click "Download" to download mod DLLs
           4. Click "Inject" to inject into running games
+
+          ## 🛡️ Antivirus Exclusion
+          Add an exclusion for: `%APPDATA%\Cipher`
 
         files: |
           Cipher_x64.exe
@@ -183,13 +235,13 @@ jobs:
         body: |
           # 🔐 Cipher ${{ github.ref_name }}
 
-          ## 🚀 Download
+          ## 🚀 Download (Single EXE - No installation required)
           - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.exe)** - For 64-bit games (recommended)
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 What's New
           - Stable release build
-          - Both x64 and x86 versions available as single EXEs
+          - Single EXE - no dependencies needed
           - Ready to use, no installation required
 
           ## ⚠️ Important
@@ -202,6 +254,9 @@ jobs:
           2. Click "Add Mod" to add your mods
           3. Click "Download" to download mod DLLs
           4. Click "Inject" to inject into running games
+
+          ## 🛡️ Antivirus Exclusion
+          Add an exclusion for: `%APPDATA%\Cipher`
 
         files: |
           Cipher_x64.exe

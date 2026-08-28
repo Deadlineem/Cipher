@@ -1,4 +1,4 @@
-name: Build and Release Cipher (Signed)
+name: Build and Release Cipher (Single EXE)
 
 on:
   push:
@@ -61,11 +61,10 @@ jobs:
         
         ## 📦 How to Use
         1. Download the correct EXE for your system
-        2. Move to a trusted folder (e.g., C:\Program Files\Cipher\)
-        3. Run as Administrator (right-click → Run as administrator)
-        4. Click "Add Mod" to add your mods
-        5. Click "Download" to download mod DLLs
-        6. Click "Inject" to inject into running games
+        2. Run as Administrator (right-click → Run as administrator)
+        3. Click "Add Mod" to add your mods
+        4. Click "Download" to download mod DLLs
+        5. Click "Inject" to inject into running games
         
         ## ⚠️ Important
         1. **Run as Administrator** - Required for DLL injection
@@ -79,15 +78,7 @@ jobs:
         "@
         $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
 
-    - name: Setup Signing Certificate
-      shell: pwsh
-      run: |
-        # Decode the Base64 PFX back to a file
-        $pfxBytes = [Convert]::FromBase64String("${{ secrets.PFX_BASE64 }}")
-        [IO.File]::WriteAllBytes("$env:USERPROFILE\Cipher.pfx", $pfxBytes)
-        Write-Host "✅ Certificate restored to: $env:USERPROFILE\Cipher.pfx"
-
-    - name: Sign x64 EXE
+    - name: Copy Single EXE (x64)
       shell: pwsh
       run: |
         # Find the x64 release folder
@@ -100,54 +91,17 @@ jobs:
         
         Write-Host "✅ x64 path: $x64Path"
         
-        # Sign the EXE
-        & signtool sign /f "$env:USERPROFILE\Cipher.pfx" /p "${{ secrets.PFX_PASSWORD }}" /fd SHA256 /tr "http://timestamp.digicert.com" /td SHA256 /a "$x64Path\Cipher.exe"
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Successfully signed x64 EXE"
+        # Verify the EXE exists
+        if (Test-Path "$x64Path\Cipher.exe") {
+            Write-Host "✅ Cipher.exe found"
+            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force
+            $size = (Get-Item "Cipher_x64.exe").Length
+            Write-Host "📊 EXE size: $size bytes"
         } else {
-            Write-Host "❌ Failed to sign x64 EXE"
+            Write-Host "❌ Cipher.exe NOT found!"
+            Get-ChildItem $x64Path\
             exit 1
         }
-
-    - name: Sign x86 EXE
-      shell: pwsh
-      run: |
-        # Find the x86 release folder
-        $x86Path = if (Test-Path "Cipher\bin\x86\Release") { "Cipher\bin\x86\Release" } 
-                   elseif (Test-Path "bin\x86\Release") { "bin\x86\Release" }
-                   else { 
-                     Write-Host "❌ x86 release folder not found!"
-                     exit 1
-                   }
-        
-        Write-Host "✅ x86 path: $x86Path"
-        
-        # Sign the EXE
-        & signtool sign /f "$env:USERPROFILE\Cipher.pfx" /p "${{ secrets.PFX_PASSWORD }}" /fd SHA256 /tr "http://timestamp.digicert.com" /td SHA256 /a "$x86Path\Cipher.exe"
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Successfully signed x86 EXE"
-        } else {
-            Write-Host "❌ Failed to sign x86 EXE"
-            exit 1
-        }
-
-    - name: Copy Single EXE (x64)
-      shell: pwsh
-      run: |
-        # Find the x64 release folder
-        $x64Path = if (Test-Path "Cipher\bin\x64\Release") { "Cipher\bin\x64\Release" } 
-                   elseif (Test-Path "bin\x64\Release") { "bin\x64\Release" }
-                   else { 
-                     Write-Host "❌ x64 release folder not found!"
-                     exit 1
-                   }
-        
-        # Copy to root with x64 name
-        Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force
-        $size = (Get-Item "Cipher_x64.exe").Length
-        Write-Host "📊 EXE size: $size bytes"
 
     - name: Copy Single EXE (x86)
       shell: pwsh
@@ -160,10 +114,19 @@ jobs:
                      exit 1
                    }
         
-        # Copy to root with x86 name
-        Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force
-        $size = (Get-Item "Cipher_x86.exe").Length
-        Write-Host "📊 EXE size: $size bytes"
+        Write-Host "✅ x86 path: $x86Path"
+        
+        # Verify the EXE exists
+        if (Test-Path "$x86Path\Cipher.exe") {
+            Write-Host "✅ Cipher.exe found"
+            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force
+            $size = (Get-Item "Cipher_x86.exe").Length
+            Write-Host "📊 EXE size: $size bytes"
+        } else {
+            Write-Host "❌ Cipher.exe NOT found!"
+            Get-ChildItem $x86Path\
+            exit 1
+        }
 
     - name: Upload x64 EXE as Artifact
       uses: actions/upload-artifact@v4
@@ -258,32 +221,29 @@ jobs:
             exit 1
         }
 
-    - name: Create Release (Nightly) - SIGNED
+    - name: Create Release (Nightly) - USING THE ARTIFACT
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
-        name: Cipher Nightly #${{ github.run_number }}
-        tag_name: nightly-${{ github.run_number }}
+        name: Cipher Nightly
+        tag_name: nightly
         draft: false
         prerelease: true
         body: |
-          # 🔐 Cipher Nightly Build #${{ github.run_number }}
+          # 🔐 Cipher Nightly Build
 
-          ## 🚀 Download (Signed EXE - No installation required)
-          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.exe)** - For 64-bit games (recommended)
-          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.exe)** - For 32-bit games
+          ## 🚀 Download (Single EXE - No installation required)
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
-          - **Build Number:** #${{ github.run_number }}
           - **Commit:** ${{ github.sha }}
           - **Trigger:** ${{ github.event_name }}
 
-          ## 🔐 Signed with Self-Signed Certificate
-          This EXE is digitally signed. You may still see a Windows warning because it's a self-signed certificate.
-
           ## ⚠️ Important
+          1. **Move to your Desktop & Add an antivirus exclusion for the file** - Required as the program uses CreateRemoteThread() for injecting DLL files.
           1. **Run as Administrator** - Required for DLL injection
-          2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
+          2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder - Required to store mod files in Cipher folder
           3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
 
           ## 🛠️ Usage
@@ -293,16 +253,16 @@ jobs:
           4. Click "Inject" to inject into running games
 
           ## 🛡️ Antivirus Exclusion
-          Add an exclusion for: `%APPDATA%\Cipher`
+          Add an exclusion for: `%APPDATA%\Cipher` && `Cipher_<x64|x86>.exe` in Windows Defender or Other antivirus program.
 
         files: |
           release_artifacts/Cipher_x64.exe
           release_artifacts/Cipher_x86.exe
-          release_artifacts/README.txt
+
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
-    - name: Create Release (Stable) - SIGNED
+    - name: Create Release (Stable)
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
@@ -313,7 +273,7 @@ jobs:
         body: |
           # 🔐 Cipher ${{ github.ref_name }}
 
-          ## 🚀 Download (Signed EXE - No installation required)
+          ## 🚀 Download (Single EXE - No installation required)
           - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.exe)** - For 64-bit games (recommended)
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.exe)** - For 32-bit games
 
@@ -321,7 +281,6 @@ jobs:
           - Stable release build
           - Single EXE - no dependencies needed
           - Ready to use, no installation required
-          - Digitally signed with self-signed certificate
 
           ## ⚠️ Important
           1. **Run as Administrator** - Required for DLL injection
@@ -340,6 +299,6 @@ jobs:
         files: |
           release_artifacts/Cipher_x64.exe
           release_artifacts/Cipher_x86.exe
-          release_artifacts/README.txt
+
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

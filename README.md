@@ -1,12 +1,17 @@
 # 🔐 Cipher - Mod Manager, Downloader & Injector
 
-![GitHub Release](https://img.shields.io/github/v/release/Deadlineem/Cipher)
 ![GitHub Downloads](https://img.shields.io/github/downloads/Deadlineem/Cipher/total)
 ![License](https://img.shields.io/github/license/Deadlineem/Cipher)
 ![Platform](https://img.shields.io/badge/platform-x64%20%7C%20x86-blue)
 
 <div align="center">
-  <img width="1919" height="1312" alt="image" src="https://github.com/user-attachments/assets/3c4c2bad-3038-4e77-a4a0-d4333dbca4af" />
+  <table>
+    <tr>
+      <td><img src="https://github.com/user-attachments/assets/3c4c2bad-3038-4e77-a4a0-d4333dbca4af" alt="Cipher Screenshot 1" width="400" /></td>
+      <td><img src="https://github.com/user-attachments/assets/58431726-094b-46db-8d80-fc038e90a2d6" alt="Cipher Screenshot 2" width="400" /></td>
+      <td><img width="400" alt="Cipher Screenshot 3" src="https://github.com/user-attachments/assets/631b55b7-46ea-4c3d-8763-028b275f4041" /></td>
+    </tr>
+  </table>
 </div>
 
 ## 📖 Overview
@@ -42,9 +47,8 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 | **OS** | Windows 10 / Windows 11 |
 | **.NET Framework** | 4.7.2 or higher (included in Windows) |
 | **Processor** | Any x64 or x86 compatible CPU |
-| **RAM** | 4GB minimum |
-| **Storage** | 1GB free space (for mods) |
-| **Privileges** | Administrator rights required for injection |
+| **Privileges** | Administrator rights required for mod injection |
+| **Anti-Virus** | Exclusions for `%APPDATA%\Cipher` & `Cipher_x64.exe`/`Cipher_x86.exe` REQUIRED |
 
 ---
 
@@ -54,10 +58,10 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 
 1. Visit the [Releases](https://github.com/Deadlineem/Cipher/releases) page
 2. Download the correct version for your system:
-   - **[Cipher_x64.zip](https://github.com/Deadlineem/Cipher/releases/latest)** - For 64-bit games (recommended for most users)
-   - **[Cipher_x86.zip](https://github.com/Deadlineem/Cipher/releases/latest)** - For 32-bit games
-3. Extract the ZIP file to any folder
-4. Run `Cipher.exe` as Administrator (right-click → "Run as administrator")
+   - **[Cipher_x64.zip](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended for most users)
+   - **[Cipher_x86.zip](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
+3. Add an Exclusion to your Anti-Virus software for Cipher_(x86 | x64).exe `(It uses CreateRemoteThread() so it sends false positives, its safe and open source, check the code!)`
+4. Run `Cipher_x64.exe` OR `Cipher_x86.exe` as Administrator (right-click → "Run as administrator")
 
 ### Option 2: Build from Source
 

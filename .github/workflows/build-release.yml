@@ -3,8 +3,8 @@ name: Build and Release Cipher
 on:
   push:
     tags:
-      - 'v*'  # Triggers on tags like v1.0.0, v2.3.4, etc.
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -38,11 +38,36 @@ jobs:
         New-Item -ItemType Directory -Force -Path Cipher_x64
         New-Item -ItemType Directory -Force -Path Cipher_x86
 
-        # Copy x64 files (the project outputs to bin\x64\Release\)
-        Copy-Item -Path bin\x64\Release\* -Destination Cipher_x64\ -Recurse -Force
+        # Copy x64 files - checking both possible locations
+        Write-Host "📁 Current directory: $(Get-Location)"
+        Write-Host "📁 Directory contents:"
+        Get-ChildItem -Recurse -Directory | ForEach-Object { Write-Host "  $_" }
 
-        # Copy x86 files
-        Copy-Item -Path bin\x86\Release\* -Destination Cipher_x86\ -Recurse -Force
+        # Try to find the x64 release folder
+        $x64Path = if (Test-Path "Cipher\bin\x64\Release") { "Cipher\bin\x64\Release" } 
+                   elseif (Test-Path "bin\x64\Release") { "bin\x64\Release" }
+                   else { $null }
+        
+        $x86Path = if (Test-Path "Cipher\bin\x86\Release") { "Cipher\bin\x86\Release" } 
+                   elseif (Test-Path "bin\x86\Release") { "bin\x86\Release" }
+                   else { $null }
+
+        if ($x64Path) {
+            Write-Host "✅ Found x64 at: $x64Path"
+            Copy-Item -Path "$x64Path\*" -Destination Cipher_x64\ -Recurse -Force
+        } else {
+            Write-Host "❌ x64 release folder not found!"
+            Get-ChildItem -Recurse | Where-Object { $_.Name -like "*.exe" } | ForEach-Object { Write-Host "Found EXE: $($_.FullName)" }
+            exit 1
+        }
+
+        if ($x86Path) {
+            Write-Host "✅ Found x86 at: $x86Path"
+            Copy-Item -Path "$x86Path\*" -Destination Cipher_x86\ -Recurse -Force
+        } else {
+            Write-Host "❌ x86 release folder not found!"
+            exit 1
+        }
 
         # Create README files
         $readmeContent = @"
@@ -60,7 +85,7 @@ jobs:
         $readmeContent | Out-File -FilePath Cipher_x64\README.txt -Encoding UTF8
         $readmeContent | Out-File -FilePath Cipher_x86\README.txt -Encoding UTF8
 
-        # Create ZIP files using built-in PowerShell compression
+        # Create ZIP files
         Compress-Archive -Path Cipher_x64\* -DestinationPath Cipher_x64.zip -Force
         Compress-Archive -Path Cipher_x86\* -DestinationPath Cipher_x86.zip -Force
 

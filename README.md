@@ -60,8 +60,9 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 2. Download the correct version for your system:
    - **[Cipher_x64.zip](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended for most users)
    - **[Cipher_x86.zip](https://github.com/Deadlineem/Cipher/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
-3. Add an Exclusion to your Anti-Virus software for Cipher_(x86 | x64).exe `(It uses CreateRemoteThread() so it sends false positives, its safe and open source, check the code!)`
+3. Add an Exclusion to your Anti-Virus software for `Cipher_(x86 | x64).exe` `(It uses CreateRemoteThread() so it sends false positives, its safe and open source, check the code!)`
 4. Run `Cipher_x64.exe` OR `Cipher_x86.exe` as Administrator (right-click → "Run as administrator")
+5. Add an Exclusion to your Anti-Virus software for `%APPDATA%\Cipher`
 
 ### Option 2: Build from Source
 

@@ -6,7 +6,7 @@
 ![Platform](https://img.shields.io/badge/platform-x64%20%7C%20x86-blue)
 
 <div align="center">
-  <img src="https://i.imgur.com/placeholder.png" alt="Cipher Screenshot" width="800">
+  <img width="1919" height="1312" alt="image" src="https://github.com/user-attachments/assets/3c4c2bad-3038-4e77-a4a0-d4333dbca4af" />
 </div>
 
 ## 📖 Overview

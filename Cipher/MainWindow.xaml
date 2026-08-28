@@ -74,6 +74,7 @@
 
                     <!-- Maximize/Restore Button -->
                     <Button x:Name="MaximizeButton"
+                            Content="☐"
                             Width="28" Height="28" 
                             FontSize="14"
                             Background="Transparent" 

@@ -25,49 +25,46 @@ jobs:
 
     - name: Build x64 Release
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=bin\x64\Release /verbosity:minimal
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
 
     - name: Build x86 Release
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:OutputPath=bin\x86\Release /verbosity:minimal
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
 
-    - name: Create build artifacts
+    - name: Create build artifacts (PowerShell)
+      shell: pwsh
       run: |
-        # Create folders for each architecture
-        mkdir Cipher_x64
-        mkdir Cipher_x86
+        # Create output folders
+        New-Item -ItemType Directory -Force -Path Cipher_x64
+        New-Item -ItemType Directory -Force -Path Cipher_x86
 
-        # Copy x64 files
-        copy bin\x64\Release\*.exe Cipher_x64\
-        copy bin\x64\Release\*.dll Cipher_x64\
-        copy bin\x64\Release\*.config Cipher_x64\ 2>nul || ver>nul
+        # Copy x64 files (the project outputs to bin\x64\Release\)
+        Copy-Item -Path bin\x64\Release\* -Destination Cipher_x64\ -Recurse -Force
 
         # Copy x86 files
-        copy bin\x86\Release\*.exe Cipher_x86\
-        copy bin\x86\Release\*.dll Cipher_x86\
-        copy bin\x86\Release\*.config Cipher_x86\ 2>nul || ver>nul
+        Copy-Item -Path bin\x86\Release\* -Destination Cipher_x86\ -Recurse -Force
 
         # Create README files
-        echo. > Cipher_x64\README.txt
-        echo Cipher v1.0 - x64 Build >> Cipher_x64\README.txt
-        echo. >> Cipher_x64\README.txt
-        echo Release Date: %date% >> Cipher_x64\README.txt
-        echo. >> Cipher_x64\README.txt
-        echo 1. Run Cipher.exe as Administrator >> Cipher_x64\README.txt
-        echo 2. Click "Add Mod" to add your mods >> Cipher_x64\README.txt
-        echo 3. Click "Download" to download mod DLLs >> Cipher_x64\README.txt
-        echo 4. Click "Inject" to inject into running games >> Cipher_x64\README.txt
+        $readmeContent = @"
+        Cipher v1.0 - ${{ github.ref_name }}
+        =================================
+        Release Date: $(Get-Date -Format 'yyyy-MM-dd')
+        
+        1. Run Cipher.exe as Administrator
+        2. Click "Add Mod" to add your mods
+        3. Click "Download" to download mod DLLs
+        4. Click "Inject" to inject into running games
+        
+        For help, click the "Help" button in the app.
+        "@
+        $readmeContent | Out-File -FilePath Cipher_x64\README.txt -Encoding UTF8
+        $readmeContent | Out-File -FilePath Cipher_x86\README.txt -Encoding UTF8
 
-        copy Cipher_x64\README.txt Cipher_x86\README.txt
+        # Create ZIP files using built-in PowerShell compression
+        Compress-Archive -Path Cipher_x64\* -DestinationPath Cipher_x64.zip -Force
+        Compress-Archive -Path Cipher_x86\* -DestinationPath Cipher_x86.zip -Force
 
-        # Create ZIP files (if 7z is available)
-        if exist "C:\Program Files\7-Zip\7z.exe" (
-          "C:\Program Files\7-Zip\7z.exe" a -tzip Cipher_x64.zip Cipher_x64\
-          "C:\Program Files\7-Zip\7z.exe" a -tzip Cipher_x86.zip Cipher_x86\
-        ) else (
-          # Fallback: just create folders as artifacts
-          echo Skipping ZIP creation - 7-Zip not found
-        )
+        Write-Host "✅ Build artifacts created successfully!"
 
     - name: Upload x64 Build Artifact
       uses: actions/upload-artifact@v4
@@ -80,6 +77,14 @@ jobs:
       with:
         name: Cipher_x86
         path: Cipher_x86/
+
+    - name: Upload ZIP Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Cipher_Archives
+        path: |
+          Cipher_x64.zip
+          Cipher_x86.zip
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
@@ -112,22 +117,11 @@ jobs:
           4. Click "Download" to download mod DLLs
           5. Click "Inject" to inject into running games
 
+          ## 💡 Need Help?
+          Click the "Help" button in the app for antivirus exclusion instructions.
+
         files: |
           Cipher_x64.zip
           Cipher_x86.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Release without ZIP (fallback)
-      if: startsWith(github.ref, 'refs/tags/') && !cancelled()
-      uses: softprops/action-gh-release@v1
-      with:
-        name: Cipher ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-        files: |
-          Cipher_x64/Cipher.exe
-          Cipher_x86/Cipher.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true

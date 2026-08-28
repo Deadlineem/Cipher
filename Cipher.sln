@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipher", "Cipher\Cipher.csproj", "{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Debug|x64.ActiveCfg = Debug|x64
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Debug|x64.Build.0 = Debug|x64
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Release|x64.ActiveCfg = Release|x64
+		{4D7EADA9-09C4-43B5-86CC-0F79D48C970E}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7C38DA7-A187-44A5-B2ED-D9F466A175B7}
+	EndGlobalSection
+EndGlobal

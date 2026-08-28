@@ -41,9 +41,7 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 | **OS** | Windows 10 / Windows 11 |
 | **.NET Framework** | 4.7.2 or higher (included in Windows) |
 | **Processor** | Any x64 or x86 compatible CPU |
-| **RAM** | 4GB minimum |
-| **Storage** | 1GB free space (for mods) |
-| **Privileges** | Administrator rights required for injection |
+| **Privileges** | Administrator rights required for use/mod injection |
 
 ---
 

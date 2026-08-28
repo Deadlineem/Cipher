@@ -11,7 +11,7 @@ on:
       - '**/*.csproj'
       - '**/*.sln'
   schedule:
-    - cron: '0 */12 * * *'  # Runs every 12 hours
+    - cron: '0 */12 * * *'
   workflow_dispatch:
 
 permissions:
@@ -35,57 +35,23 @@ jobs:
     - name: Restore NuGet packages
       run: nuget restore Cipher.sln
 
-    - name: Build x64 Release
+    - name: Publish x64 as Single EXE
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=bin\x64\Release /verbosity:minimal
+        # Copy and rename the EXE
+        Copy-Item "Cipher\bin\x64\Release\Cipher.exe" "Cipher_x64.exe" -Force
 
-    - name: Build x86 Release
+    - name: Publish x86 as Single EXE
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:OutputPath=bin\x86\Release /verbosity:minimal
+        # Copy and rename the EXE
+        Copy-Item "Cipher\bin\x86\Release\Cipher.exe" "Cipher_x86.exe" -Force
 
-    - name: Create build artifacts (PowerShell)
+    - name: Create README file
       shell: pwsh
       run: |
-        # Create output folders
-        New-Item -ItemType Directory -Force -Path Cipher_x64
-        New-Item -ItemType Directory -Force -Path Cipher_x86
-
-        # Copy x64 files - checking both possible locations
-        Write-Host "📁 Current directory: $(Get-Location)"
-        Write-Host "📁 Directory contents:"
-        Get-ChildItem -Recurse -Directory | ForEach-Object { Write-Host "  $_" }
-
-        # Try to find the x64 release folder
-        $x64Path = if (Test-Path "Cipher\bin\x64\Release") { "Cipher\bin\x64\Release" } 
-                   elseif (Test-Path "bin\x64\Release") { "bin\x64\Release" }
-                   else { $null }
-        
-        $x86Path = if (Test-Path "Cipher\bin\x86\Release") { "Cipher\bin\x86\Release" } 
-                   elseif (Test-Path "bin\x86\Release") { "bin\x86\Release" }
-                   else { $null }
-
-        if ($x64Path) {
-            Write-Host "✅ Found x64 at: $x64Path"
-            Copy-Item -Path "$x64Path\*" -Destination Cipher_x64\ -Recurse -Force
-        } else {
-            Write-Host "❌ x64 release folder not found!"
-            Get-ChildItem -Recurse | Where-Object { $_.Name -like "*.exe" } | ForEach-Object { Write-Host "Found EXE: $($_.FullName)" }
-            exit 1
-        }
-
-        if ($x86Path) {
-            Write-Host "✅ Found x86 at: $x86Path"
-            Copy-Item -Path "$x86Path\*" -Destination Cipher_x86\ -Recurse -Force
-        } else {
-            Write-Host "❌ x86 release folder not found!"
-            exit 1
-        }
-
-        # Create README files
         $version = "${{ github.ref_name }}"
-        if ($version -eq "") {
-            $version = "dev-build"
-        }
+        if ($version -eq "") { $version = "dev-build" }
         
         $readmeContent = @"
         Cipher v1.0 - $version
@@ -93,41 +59,42 @@ jobs:
         Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
         Build Hash: ${{ github.sha }}
         
-        1. Run Cipher.exe as Administrator
+        ## 🚀 Files
+        - **Cipher_x64.exe** - For 64-bit games (RDR2, GTA5 Enhanced, modern games)
+        - **Cipher_x86.exe** - For 32-bit games (GTA5 Legacy, older games)
+        
+        ## ⚠️ Important
+        1. **Run as Administrator** - Required for DLL injection
+        2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
+        3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
+        
+        ## 🛠️ Usage
+        1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
         2. Click "Add Mod" to add your mods
         3. Click "Download" to download mod DLLs
         4. Click "Inject" to inject into running games
         
         For help, click the "Help" button in the app.
         "@
-        $readmeContent | Out-File -FilePath Cipher_x64\README.txt -Encoding UTF8
-        $readmeContent | Out-File -FilePath Cipher_x86\README.txt -Encoding UTF8
+        $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
 
-        # Create ZIP files
-        Compress-Archive -Path Cipher_x64\* -DestinationPath Cipher_x64.zip -Force
-        Compress-Archive -Path Cipher_x86\* -DestinationPath Cipher_x86.zip -Force
-
-        Write-Host "✅ Build artifacts created successfully!"
-
-    - name: Upload x64 Build Artifact
+    - name: Upload x64 EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x64
-        path: Cipher_x64/
+        path: Cipher_x64.exe
 
-    - name: Upload x86 Build Artifact
+    - name: Upload x86 EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x86
-        path: Cipher_x86/
+        path: Cipher_x86.exe
 
-    - name: Upload ZIP Artifacts
+    - name: Upload README
       uses: actions/upload-artifact@v4
       with:
-        name: Cipher_Archives
-        path: |
-          Cipher_x64.zip
-          Cipher_x86.zip
+        name: README
+        path: README.txt
 
     - name: Delete existing nightly releases
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -178,8 +145,8 @@ jobs:
           # 🔐 Cipher Nightly Build #${{ github.run_number }}
 
           ## 🚀 Download
-          - **[Cipher_x64.zip](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.zip)** - For 64-bit games (recommended)
-          - **[Cipher_x86.zip](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.zip)** - For 32-bit games
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
           - **Build Number:** #${{ github.run_number }}
@@ -187,29 +154,21 @@ jobs:
           - **Branch:** ${{ github.ref_name }}
           - **Trigger:** ${{ github.event_name }}
 
-          ## 📝 What's New
-          - Latest development build
-          - Both x64 and x86 versions included
-          - Ready to use, no installation required
-
           ## ⚠️ Important
           1. **Run as Administrator** - Required for DLL injection
           2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
           3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
 
           ## 🛠️ Usage
-          1. Extract the ZIP file to any folder
-          2. Run `Cipher.exe` as Administrator
-          3. Click "Add Mod" to add your mods
-          4. Click "Download" to download mod DLLs
-          5. Click "Inject" to inject into running games
-
-          ## 💡 Need Help?
-          Click the "Help" button in the app for antivirus exclusion instructions.
+          1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
+          2. Click "Add Mod" to add your mods
+          3. Click "Download" to download mod DLLs
+          4. Click "Inject" to inject into running games
 
         files: |
-          Cipher_x64.zip
-          Cipher_x86.zip
+          Cipher_x64.exe
+          Cipher_x86.exe
+          README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
@@ -225,12 +184,12 @@ jobs:
           # 🔐 Cipher ${{ github.ref_name }}
 
           ## 🚀 Download
-          - **[Cipher_x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.zip)** - For 64-bit games (recommended)
-          - **[Cipher_x86.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.zip)** - For 32-bit games
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 What's New
           - Stable release build
-          - Both x64 and x86 versions included
+          - Both x64 and x86 versions available as single EXEs
           - Ready to use, no installation required
 
           ## ⚠️ Important
@@ -239,17 +198,14 @@ jobs:
           3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
 
           ## 🛠️ Usage
-          1. Extract the ZIP file to any folder
-          2. Run `Cipher.exe` as Administrator
-          3. Click "Add Mod" to add your mods
-          4. Click "Download" to download mod DLLs
-          5. Click "Inject" to inject into running games
-
-          ## 💡 Need Help?
-          Click the "Help" button in the app for antivirus exclusion instructions.
+          1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
+          2. Click "Add Mod" to add your mods
+          3. Click "Download" to download mod DLLs
+          4. Click "Inject" to inject into running games
 
         files: |
-          Cipher_x64.zip
-          Cipher_x86.zip
+          Cipher_x64.exe
+          Cipher_x86.exe
+          README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

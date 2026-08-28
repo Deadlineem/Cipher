@@ -78,7 +78,7 @@ jobs:
         "@
         $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
 
-    - name: Copy Single EXE (x64) - USE THE SAME FILE THAT WORKS
+    - name: Copy Single EXE (x64)
       shell: pwsh
       run: |
         # Find the x64 release folder
@@ -94,25 +94,16 @@ jobs:
         # Verify the EXE exists
         if (Test-Path "$x64Path\Cipher.exe") {
             Write-Host "✅ Cipher.exe found"
-            # Copy to root with x64 name
-            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force -Verbose
+            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force
             $size = (Get-Item "Cipher_x64.exe").Length
             Write-Host "📊 EXE size: $size bytes"
-            
-            # Verify the copy worked
-            if (Test-Path "Cipher_x64.exe") {
-                Write-Host "✅ Cipher_x64.exe created successfully"
-            } else {
-                Write-Host "❌ Failed to create Cipher_x64.exe"
-                exit 1
-            }
         } else {
-            Write-Host "❌ Cipher.exe NOT found in $x64Path!"
+            Write-Host "❌ Cipher.exe NOT found!"
             Get-ChildItem $x64Path\
             exit 1
         }
 
-    - name: Copy Single EXE (x86) - USE THE SAME FILE THAT WORKS
+    - name: Copy Single EXE (x86)
       shell: pwsh
       run: |
         # Find the x86 release folder
@@ -128,31 +119,22 @@ jobs:
         # Verify the EXE exists
         if (Test-Path "$x86Path\Cipher.exe") {
             Write-Host "✅ Cipher.exe found"
-            # Copy to root with x86 name
-            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force -Verbose
+            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force
             $size = (Get-Item "Cipher_x86.exe").Length
             Write-Host "📊 EXE size: $size bytes"
-            
-            # Verify the copy worked
-            if (Test-Path "Cipher_x86.exe") {
-                Write-Host "✅ Cipher_x86.exe created successfully"
-            } else {
-                Write-Host "❌ Failed to create Cipher_x86.exe"
-                exit 1
-            }
         } else {
-            Write-Host "❌ Cipher.exe NOT found in $x86Path!"
+            Write-Host "❌ Cipher.exe NOT found!"
             Get-ChildItem $x86Path\
             exit 1
         }
 
-    - name: Upload x64 EXE Artifact (SAME FILE AS RELEASE)
+    - name: Upload x64 EXE as Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x64
         path: Cipher_x64.exe
 
-    - name: Upload x86 EXE Artifact (SAME FILE AS RELEASE)
+    - name: Upload x86 EXE as Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x86
@@ -201,7 +183,45 @@ jobs:
             }
           }
 
-    - name: Create Release (Nightly) - USING THE SAME EXE THAT WORKS
+    - name: Download x64 Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Cipher_x64
+        path: release_artifacts/
+
+    - name: Download x86 Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Cipher_x86
+        path: release_artifacts/
+
+    - name: Download README
+      uses: actions/download-artifact@v4
+      with:
+        name: README
+        path: release_artifacts/
+
+    - name: Verify Downloaded Artifacts
+      shell: pwsh
+      run: |
+        Write-Host "📁 Contents of release_artifacts:"
+        Get-ChildItem release_artifacts\
+        
+        if (Test-Path "release_artifacts/Cipher_x64.exe") {
+            Write-Host "✅ Cipher_x64.exe found in release_artifacts"
+        } else {
+            Write-Host "❌ Cipher_x64.exe NOT found in release_artifacts"
+            exit 1
+        }
+        
+        if (Test-Path "release_artifacts/Cipher_x86.exe") {
+            Write-Host "✅ Cipher_x86.exe found in release_artifacts"
+        } else {
+            Write-Host "❌ Cipher_x86.exe NOT found in release_artifacts"
+            exit 1
+        }
+
+    - name: Create Release (Nightly) - USING THE ARTIFACT
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
@@ -236,13 +256,13 @@ jobs:
           Add an exclusion for: `%APPDATA%\Cipher`
 
         files: |
-          Cipher_x64.exe
-          Cipher_x86.exe
-          README.txt
+          release_artifacts/Cipher_x64.exe
+          release_artifacts/Cipher_x86.exe
+          release_artifacts/README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
-    - name: Create Release (Stable) - USING THE SAME EXE THAT WORKS
+    - name: Create Release (Stable) - USING THE ARTIFACT
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
@@ -277,7 +297,8 @@ jobs:
           Add an exclusion for: `%APPDATA%\Cipher`
 
         files: |
-          Cipher_x64.exe
-          Cipher_x86.exe
+          release_artifacts/Cipher_x64.exe
+          release_artifacts/Cipher_x86.exe
+          release_artifacts/README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

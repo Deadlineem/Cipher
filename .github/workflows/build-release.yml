@@ -35,13 +35,13 @@ jobs:
     - name: Restore NuGet packages
       run: nuget restore Cipher.sln
 
-    - name: Build x64 Release with Debug Symbols
+    - name: Build x64 Release
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:DebugSymbols=true /p:DebugType=full /verbosity:detailed
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
 
-    - name: Build x86 Release with Debug Symbols
+    - name: Build x86 Release
       run: |
-        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:DebugSymbols=true /p:DebugType=full /verbosity:detailed
+        msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
 
     - name: Create README file
       shell: pwsh
@@ -78,7 +78,7 @@ jobs:
         "@
         $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
 
-    - name: Copy Single EXE (x64)
+    - name: Copy Single EXE (x64) - USE THE SAME FILE THAT WORKS
       shell: pwsh
       run: |
         # Find the x64 release folder
@@ -94,16 +94,25 @@ jobs:
         # Verify the EXE exists
         if (Test-Path "$x64Path\Cipher.exe") {
             Write-Host "✅ Cipher.exe found"
-            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force
+            # Copy to root with x64 name
+            Copy-Item "$x64Path\Cipher.exe" "Cipher_x64.exe" -Force -Verbose
             $size = (Get-Item "Cipher_x64.exe").Length
             Write-Host "📊 EXE size: $size bytes"
+            
+            # Verify the copy worked
+            if (Test-Path "Cipher_x64.exe") {
+                Write-Host "✅ Cipher_x64.exe created successfully"
+            } else {
+                Write-Host "❌ Failed to create Cipher_x64.exe"
+                exit 1
+            }
         } else {
-            Write-Host "❌ Cipher.exe NOT found!"
+            Write-Host "❌ Cipher.exe NOT found in $x64Path!"
             Get-ChildItem $x64Path\
             exit 1
         }
 
-    - name: Copy Single EXE (x86)
+    - name: Copy Single EXE (x86) - USE THE SAME FILE THAT WORKS
       shell: pwsh
       run: |
         # Find the x86 release folder
@@ -119,22 +128,31 @@ jobs:
         # Verify the EXE exists
         if (Test-Path "$x86Path\Cipher.exe") {
             Write-Host "✅ Cipher.exe found"
-            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force
+            # Copy to root with x86 name
+            Copy-Item "$x86Path\Cipher.exe" "Cipher_x86.exe" -Force -Verbose
             $size = (Get-Item "Cipher_x86.exe").Length
             Write-Host "📊 EXE size: $size bytes"
+            
+            # Verify the copy worked
+            if (Test-Path "Cipher_x86.exe") {
+                Write-Host "✅ Cipher_x86.exe created successfully"
+            } else {
+                Write-Host "❌ Failed to create Cipher_x86.exe"
+                exit 1
+            }
         } else {
-            Write-Host "❌ Cipher.exe NOT found!"
+            Write-Host "❌ Cipher.exe NOT found in $x86Path!"
             Get-ChildItem $x86Path\
             exit 1
         }
 
-    - name: Upload x64 EXE Artifact
+    - name: Upload x64 EXE Artifact (SAME FILE AS RELEASE)
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x64
         path: Cipher_x64.exe
 
-    - name: Upload x86 EXE Artifact
+    - name: Upload x86 EXE Artifact (SAME FILE AS RELEASE)
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x86
@@ -183,7 +201,7 @@ jobs:
             }
           }
 
-    - name: Create Release (Nightly)
+    - name: Create Release (Nightly) - USING THE SAME EXE THAT WORKS
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
@@ -224,7 +242,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
-    - name: Create Release (Stable)
+    - name: Create Release (Stable) - USING THE SAME EXE THAT WORKS
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
@@ -261,6 +279,5 @@ jobs:
         files: |
           Cipher_x64.exe
           Cipher_x86.exe
-          README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

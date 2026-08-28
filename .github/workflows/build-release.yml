@@ -2,9 +2,21 @@ name: Build and Release Cipher
 
 on:
   push:
-    tags:
-      - 'v*'  # Triggers on tags like v1.0.0, v2.3.4, etc.
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
+    branches:
+      - main
+      - master
+    paths:
+      - '**/*.cs'
+      - '**/*.xaml'
+      - '**/*.csproj'
+      - '**/*.sln'
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   build:
@@ -23,81 +35,161 @@ jobs:
     - name: Restore NuGet packages
       run: nuget restore Cipher.sln
 
-    - name: Build x64 Release
+    - name: Publish x64 as Single EXE
       run: |
         msbuild Cipher.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=bin\x64\Release /verbosity:minimal
+        # Copy and rename the EXE
+        Copy-Item "Cipher\bin\x64\Release\Cipher.exe" "Cipher_x64.exe" -Force
 
-    - name: Build x86 Release
+    - name: Publish x86 as Single EXE
       run: |
         msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /p:OutputPath=bin\x86\Release /verbosity:minimal
+        # Copy and rename the EXE
+        Copy-Item "Cipher\bin\x86\Release\Cipher.exe" "Cipher_x86.exe" -Force
 
-    - name: Create build artifacts
+    - name: Create README file
+      shell: pwsh
       run: |
-        # Create folders for each architecture
-        mkdir Cipher_x64
-        mkdir Cipher_x86
+        $version = "${{ github.ref_name }}"
+        if ($version -eq "") { $version = "dev-build" }
+        
+        $readmeContent = @"
+        Cipher v1.0 - $version
+        ========================
+        Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        Build Hash: ${{ github.sha }}
+        
+        ## 🚀 Files
+        - **Cipher_x64.exe** - For 64-bit games (RDR2, GTA5 Enhanced, modern games)
+        - **Cipher_x86.exe** - For 32-bit games (GTA5 Legacy, older games)
+        
+        ## ⚠️ Important
+        1. **Run as Administrator** - Required for DLL injection
+        2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
+        3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
+        
+        ## 🛠️ Usage
+        1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
+        2. Click "Add Mod" to add your mods
+        3. Click "Download" to download mod DLLs
+        4. Click "Inject" to inject into running games
+        
+        For help, click the "Help" button in the app.
+        "@
+        $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
 
-        # Copy x64 files
-        copy bin\x64\Release\*.exe Cipher_x64\
-        copy bin\x64\Release\*.dll Cipher_x64\
-        copy bin\x64\Release\*.config Cipher_x64\ 2>nul || ver>nul
-
-        # Copy x86 files
-        copy bin\x86\Release\*.exe Cipher_x86\
-        copy bin\x86\Release\*.dll Cipher_x86\
-        copy bin\x86\Release\*.config Cipher_x86\ 2>nul || ver>nul
-
-        # Create README files
-        echo. > Cipher_x64\README.txt
-        echo Cipher v1.0 - x64 Build >> Cipher_x64\README.txt
-        echo. >> Cipher_x64\README.txt
-        echo Release Date: %date% >> Cipher_x64\README.txt
-        echo. >> Cipher_x64\README.txt
-        echo 1. Run Cipher.exe as Administrator >> Cipher_x64\README.txt
-        echo 2. Click "Add Mod" to add your mods >> Cipher_x64\README.txt
-        echo 3. Click "Download" to download mod DLLs >> Cipher_x64\README.txt
-        echo 4. Click "Inject" to inject into running games >> Cipher_x64\README.txt
-
-        copy Cipher_x64\README.txt Cipher_x86\README.txt
-
-        # Create ZIP files (if 7z is available)
-        if exist "C:\Program Files\7-Zip\7z.exe" (
-          "C:\Program Files\7-Zip\7z.exe" a -tzip Cipher_x64.zip Cipher_x64\
-          "C:\Program Files\7-Zip\7z.exe" a -tzip Cipher_x86.zip Cipher_x86\
-        ) else (
-          # Fallback: just create folders as artifacts
-          echo Skipping ZIP creation - 7-Zip not found
-        )
-
-    - name: Upload x64 Build Artifact
+    - name: Upload x64 EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x64
-        path: Cipher_x64/
+        path: Cipher_x64.exe
 
-    - name: Upload x86 Build Artifact
+    - name: Upload x86 EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Cipher_x86
-        path: Cipher_x86/
+        path: Cipher_x86.exe
 
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+    - name: Upload README
+      uses: actions/upload-artifact@v4
+      with:
+        name: README
+        path: README.txt
+
+    - name: Delete existing nightly releases
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: releases } = await github.rest.repos.listReleases({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+          
+          for (const release of releases) {
+            if (release.tag_name && release.tag_name.startsWith('nightly-')) {
+              console.log(`🗑️ Deleting release: ${release.tag_name}`);
+              try {
+                await github.rest.repos.deleteRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id
+                });
+                console.log(`✅ Deleted release: ${release.tag_name}`);
+              } catch (e) {
+                console.log(`⚠️ Could not delete release: ${e.message}`);
+              }
+              
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${release.tag_name}`
+                });
+                console.log(`✅ Deleted tag: ${release.tag_name}`);
+              } catch (e) {
+                console.log(`⚠️ Could not delete tag: ${e.message}`);
+              }
+            }
+          }
+
+    - name: Create Release (Nightly)
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Cipher Nightly #${{ github.run_number }}
+        tag_name: nightly-${{ github.run_number }}
+        draft: false
+        prerelease: true
+        body: |
+          # 🔐 Cipher Nightly Build #${{ github.run_number }}
+
+          ## 🚀 Download
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.exe)** - For 32-bit games
+
+          ## 📝 Build Information
+          - **Build Number:** #${{ github.run_number }}
+          - **Commit:** ${{ github.sha }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Trigger:** ${{ github.event_name }}
+
+          ## ⚠️ Important
+          1. **Run as Administrator** - Required for DLL injection
+          2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
+          3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
+
+          ## 🛠️ Usage
+          1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
+          2. Click "Add Mod" to add your mods
+          3. Click "Download" to download mod DLLs
+          4. Click "Inject" to inject into running games
+
+        files: |
+          Cipher_x64.exe
+          Cipher_x86.exe
+          README.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    - name: Create Release (Stable)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
       with:
         name: Cipher ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
         draft: false
         prerelease: false
         body: |
           # 🔐 Cipher ${{ github.ref_name }}
 
           ## 🚀 Download
-          - **[Cipher_x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.zip)** - For 64-bit games (recommended)
-          - **[Cipher_x86.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.zip)** - For 32-bit games
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 What's New
-          - Full release build
-          - Both x64 and x86 versions included
+          - Stable release build
+          - Both x64 and x86 versions available as single EXEs
           - Ready to use, no installation required
 
           ## ⚠️ Important
@@ -106,28 +198,14 @@ jobs:
           3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
 
           ## 🛠️ Usage
-          1. Extract the ZIP file to any folder
-          2. Run `Cipher.exe` as Administrator
-          3. Click "Add Mod" to add your mods
-          4. Click "Download" to download mod DLLs
-          5. Click "Inject" to inject into running games
+          1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
+          2. Click "Add Mod" to add your mods
+          3. Click "Download" to download mod DLLs
+          4. Click "Inject" to inject into running games
 
         files: |
-          Cipher_x64.zip
-          Cipher_x86.zip
+          Cipher_x64.exe
+          Cipher_x86.exe
+          README.txt
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Release without ZIP (fallback)
-      if: startsWith(github.ref, 'refs/tags/') && !cancelled()
-      uses: softprops/action-gh-release@v1
-      with:
-        name: Cipher ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-        files: |
-          Cipher_x64/Cipher.exe
-          Cipher_x86/Cipher.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

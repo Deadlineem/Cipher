@@ -78,7 +78,7 @@
                             Width="28" Height="28" 
                             FontSize="14"
                             Background="Transparent" 
-                            Foreground="#FFFFFF"
+                            Foreground="#8A8AA0"
                             BorderThickness="0"
                             Cursor="Hand"
                             Click="MaximizeButton_Click">

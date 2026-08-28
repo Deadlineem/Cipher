@@ -2,9 +2,17 @@ name: Build and Release Cipher
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    branches:
+      - main
+      - master
+    paths:
+      - '**/*.cs'
+      - '**/*.xaml'
+      - '**/*.csproj'
+      - '**/*.sln'
+  schedule:
+    - cron: '0 */12 * * *'  # Runs every 12 hours
+  workflow_dispatch:  # Manual trigger from GitHub UI
 
 jobs:
   build:
@@ -70,10 +78,16 @@ jobs:
         }
 
         # Create README files
+        $version = "${{ github.ref_name }}"
+        if ($version -eq "") {
+            $version = "dev-build"
+        }
+        
         $readmeContent = @"
-        Cipher v1.0 - ${{ github.ref_name }}
-        =================================
-        Release Date: $(Get-Date -Format 'yyyy-MM-dd')
+        Cipher v1.0 - $version
+        ========================
+        Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        Build Hash: ${{ github.sha }}
         
         1. Run Cipher.exe as Administrator
         2. Click "Add Mod" to add your mods
@@ -111,11 +125,90 @@ jobs:
           Cipher_x64.zip
           Cipher_x86.zip
 
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Delete existing releases
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: releases } = await github.rest.repos.listReleases({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+          
+          for (const release of releases) {
+            if (release.tag_name.startsWith('nightly-')) {
+              console.log(`Deleting release: ${release.tag_name}`);
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id
+              });
+              
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${release.tag_name}`
+                });
+              } catch (e) {
+                console.log(`Could not delete tag: ${e.message}`);
+              }
+            }
+          }
+
+    - name: Create Release (Nightly)
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Cipher Nightly ${{ github.run_number }}
+        tag_name: nightly-${{ github.run_number }}
+        draft: false
+        prerelease: true
+        body: |
+          # 🔐 Cipher Nightly Build #${{ github.run_number }}
+
+          ## 🚀 Download
+          - **[Cipher_x64.zip](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.zip)** - For 64-bit games (recommended)
+          - **[Cipher_x86.zip](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.zip)** - For 32-bit games
+
+          ## 📝 Build Information
+          - **Build Number:** #${{ github.run_number }}
+          - **Commit:** ${{ github.sha }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Trigger:** ${{ github.event_name }}
+
+          ## 📝 What's New
+          - Latest development build
+          - Both x64 and x86 versions included
+          - Ready to use, no installation required
+
+          ## ⚠️ Important
+          1. **Run as Administrator** - Required for DLL injection
+          2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
+          3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
+
+          ## 🛠️ Usage
+          1. Extract the ZIP file to any folder
+          2. Run `Cipher.exe` as Administrator
+          3. Click "Add Mod" to add your mods
+          4. Click "Download" to download mod DLLs
+          5. Click "Inject" to inject into running games
+
+          ## 💡 Need Help?
+          Click the "Help" button in the app for antivirus exclusion instructions.
+
+        files: |
+          Cipher_x64.zip
+          Cipher_x86.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Release (Stable)
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
         name: Cipher ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
         draft: false
         prerelease: false
         body: |
@@ -126,7 +219,7 @@ jobs:
           - **[Cipher_x86.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.zip)** - For 32-bit games
 
           ## 📝 What's New
-          - Full release build
+          - Stable release build
           - Both x64 and x86 versions included
           - Ready to use, no installation required
 

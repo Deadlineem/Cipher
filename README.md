@@ -7,9 +7,9 @@
 <div align="center">
   <table>
     <tr>
-      <td><img src="https://github.com/user-attachments/assets/3c4c2bad-3038-4e77-a4a0-d4333dbca4af" alt="Cipher Screenshot 1" width="400" /></td>
-      <td><img src="https://github.com/user-attachments/assets/58431726-094b-46db-8d80-fc038e90a2d6" alt="Cipher Screenshot 2" width="400" /></td>
-      <td><img width="400" alt="Cipher Screenshot 3" src="https://github.com/user-attachments/assets/631b55b7-46ea-4c3d-8763-028b275f4041" /></td>
+      <td><img width="400" alt="image" src="https://github.com/user-attachments/assets/464e3adb-7607-4c93-b197-95f46582233d"/></td>
+      <td><img width="400" alt="image" src="https://github.com/user-attachments/assets/10b2c3fa-48b5-454a-9917-46642ccd5cc8" /></td>
+      <td><img width="400" alt="image" src="https://github.com/user-attachments/assets/2e01909d-904e-48ef-bfd6-3cf057457d6e" /></td>
     </tr>
   </table>
 </div>

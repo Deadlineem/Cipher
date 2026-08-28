@@ -41,7 +41,8 @@ Whether you're a casual gamer or a dedicated modder, Cipher streamlines the enti
 | **OS** | Windows 10 / Windows 11 |
 | **.NET Framework** | 4.7.2 or higher (included in Windows) |
 | **Processor** | Any x64 or x86 compatible CPU |
-| **Privileges** | Administrator rights required for use/mod injection |
+| **Privileges** | Administrator rights required for mod injection |
+| **Anti-Virus** | Exclusions for `%APPDATA%\Cipher` & `Cipher_x64.exe`/`Cipher_x86.exe` |
 
 ---
 

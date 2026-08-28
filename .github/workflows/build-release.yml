@@ -263,15 +263,15 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         name: Cipher Nightly #${{ github.run_number }}
-        tag_name: nightly-${{ github.run_number }}
+        tag_name: nightly
         draft: false
         prerelease: true
         body: |
-          # 🔐 Cipher Nightly Build #${{ github.run_number }}
+          # 🔐 Cipher Nightly Build
 
           ## 🚀 Download (Signed EXE - No installation required)
-          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x64.exe)** - For 64-bit games (recommended)
-          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly-${{ github.run_number }}/Cipher_x86.exe)** - For 32-bit games
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
           - **Build Number:** #${{ github.run_number }}
@@ -340,6 +340,5 @@ jobs:
         files: |
           release_artifacts/Cipher_x64.exe
           release_artifacts/Cipher_x86.exe
-          release_artifacts/README.txt
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

@@ -19,6 +19,7 @@
             <RowDefinition Height="55"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="45"/>
+            <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
         <!-- ===== TITLE BAR ===== -->
@@ -39,6 +40,7 @@
                            Margin="16,0,0,0"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,12,0">
+                    <!-- Minimize Button -->
                     <Button Content="─" 
                             Width="28" Height="28" 
                             FontSize="16"
@@ -70,6 +72,39 @@
                         </Button.Style>
                     </Button>
 
+                    <!-- Maximize/Restore Button -->
+                    <Button x:Name="MaximizeButton"
+                            Width="28" Height="28" 
+                            FontSize="14"
+                            Background="Transparent" 
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="MaximizeButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#3A3A52"/>
+                                        <Setter Property="Foreground" Value="#DCE0F0"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Close Button -->
                     <Button Content="✕" 
                             Width="28" Height="28" 
                             FontSize="14"
@@ -219,16 +254,16 @@
                     </Button.Style>
                 </Button>
 
-                <Button Content="⟳ Refresh" 
-                        Background="#50507A" 
-                        Foreground="#DCE0F0"
+                <Button Content="📖 About" 
+                        Background="#89B4FA" 
+                        Foreground="#12121E"
                         FontFamily="Segoe UI" 
                         FontSize="13" 
                         FontWeight="Bold"
                         Padding="14,8,14,8"
                         Margin="0,0,10,0"
                         Cursor="Hand"
-                        Click="RefreshButton_Click">
+                        Click="AboutButton_Click">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -244,7 +279,12 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#6A6A92"/>
+                                    <Setter Property="Background" Value="#74C7EC"/>
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#89B4FA" Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -258,7 +298,7 @@
                         FontSize="13" 
                         FontWeight="Bold"
                         Padding="14,8,14,8"
-                        Margin="10,0,0,0"
+                        Margin="0,0,10,0"
                         Cursor="Hand"
                         Click="ShowExclusionGuide_Click">
                     <Button.Style>
@@ -294,7 +334,7 @@
         <Border Grid.Row="2" Background="#12121E" Padding="20,12,20,16">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="40"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -302,41 +342,57 @@
                 <Border Grid.Row="0" Background="#1A1A2A" CornerRadius="8,8,0,0">
                     <Grid Margin="12,0,12,0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition Width="1.0*"/>
+                            <ColumnDefinition Width="2.5*"/>
+                            <ColumnDefinition Width="0.8*"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" Text="Mod Name" 
-                                   Foreground="#969BB4" 
-                                   FontFamily="Segoe UI" 
-                                   FontSize="11" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="1" Text="Game Task" 
-                                   Foreground="#969BB4" 
-                                   FontFamily="Segoe UI" 
-                                   FontSize="11" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="2" Text="Status / Process" 
-                                   Foreground="#969BB4" 
-                                   FontFamily="Segoe UI" 
-                                   FontSize="11" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="3" Text="Actions" 
+                        <TextBlock Grid.Column="0" 
+                                   Text="Mod Name" 
                                    Foreground="#969BB4" 
                                    FontFamily="Segoe UI" 
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,0,0"/>
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="1" 
+                                   Text="Inject To" 
+                                   Foreground="#969BB4" 
+                                   FontFamily="Segoe UI" 
+                                   FontSize="11" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="2" 
+                                   Text="Update Status" 
+                                   Foreground="#969BB4" 
+                                   FontFamily="Segoe UI" 
+                                   FontSize="11" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="3" 
+                                   Text="Process Detection Status" 
+                                   Foreground="#969BB4" 
+                                   FontFamily="Segoe UI" 
+                                   FontSize="11" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="4" 
+                                   Text="Quick Actions" 
+                                   Foreground="#969BB4" 
+                                   FontFamily="Segoe UI" 
+                                   FontSize="11" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
                     </Grid>
                 </Border>
 
@@ -359,68 +415,76 @@
                                     Padding="12,6,12,6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2*"/>
                                         <ColumnDefinition Width="1.5*"/>
-                                        <ColumnDefinition Width="1*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="1.2*"/>
+                                        <ColumnDefinition Width="0.6*"/>
+                                        <ColumnDefinition Width="2.5*"/>
+                                        <ColumnDefinition Width="0.8*"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Mod Name -->
                                     <TextBlock Grid.Column="0" 
                                                Text="{Binding DisplayName}" 
                                                VerticalAlignment="Center"
-                                               FontWeight="Bold"/>
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
 
                                     <!-- Game Task -->
                                     <TextBlock Grid.Column="1" 
                                                Text="{Binding GameTask}" 
                                                VerticalAlignment="Center"
-                                               Foreground="#969BB4"/>
+                                               Foreground="#969BB4"
+                                               HorizontalAlignment="Center"/>
 
-                                    <!-- Status / Process Indicator -->
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="{Binding StatusColor}" 
-                                                CornerRadius="14"
-                                                Padding="8,2,8,2"
-                                                Height="26"
-                                                Width="100">
-                                            <TextBlock Text="{Binding StatusText}" 
-                                                       Foreground="#12121E"
-                                                       FontFamily="Segoe UI"
-                                                       FontSize="10"
-                                                       FontWeight="Bold"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
-                                        <Border x:Name="ProcessIndicator"
-                                                Background="{Binding ProcessColor, FallbackValue=Transparent}"
-                                                CornerRadius="14"
-                                                Padding="8,2,8,2"
-                                                Height="26"
-                                                Width="100"
-                                                Margin="8,0,0,0"
-                                                Visibility="Collapsed">
-                                            <TextBlock Text="{Binding ProcessStatusText}"
-                                                       Foreground="#12121E"
-                                                       FontFamily="Segoe UI"
-                                                       FontSize="10"
-                                                       FontWeight="Bold"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
-                                    </StackPanel>
+                                    <!-- Mod Status Badge -->
+                                    <Border Grid.Column="2" 
+                                            Background="{Binding StatusColor}" 
+                                            CornerRadius="14"
+                                            Padding="4,2,4,2"
+                                            Height="22"
+                                            Width="100"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding StatusText}" 
+                                                   Foreground="#12121E"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="9"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
 
-                                    <!-- Actions -->
-                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="8,0,0,0">
+                                    <!-- Process Status Indicator -->
+                                    <Border Grid.Column="3" 
+                                            Background="{Binding ProcessColor}" 
+                                            CornerRadius="14"
+                                            Padding="12,4,12,4"
+                                            Height="22"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding ProcessStatusText}" 
+                                                   Foreground="#12121E"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Action Buttons -->
+                                    <StackPanel Grid.Column="4" 
+                                                Orientation="Horizontal" 
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,0,0,0">
                                         <Button Content="⬇ Download" 
                                                 Background="#A6E3A1" 
                                                 Foreground="#12121E"
                                                 FontFamily="Segoe UI" 
-                                                FontSize="10" 
+                                                FontSize="9" 
                                                 FontWeight="Bold"
-                                                Padding="8,4,8,4"
-                                                Margin="0,0,4,0"
+                                                Padding="6,4,6,4"
+                                                Margin="0,0,3,0"
                                                 Cursor="Hand"
                                                 Click="DownloadModButton_Click"
                                                 Tag="{Binding}">
@@ -449,9 +513,9 @@
                                                 Background="#CBA6F7" 
                                                 Foreground="#12121E"
                                                 FontFamily="Segoe UI" 
-                                                FontSize="10" 
+                                                FontSize="9" 
                                                 FontWeight="Bold"
-                                                Padding="8,4,8,4"
+                                                Padding="6,4,6,4"
                                                 Cursor="Hand"
                                                 Click="InjectModButton_Click"
                                                 Tag="{Binding}">
@@ -511,7 +575,7 @@
         </Border>
 
         <!-- ===== STATUS BAR ===== -->
-        <Border Grid.Row="3" Background="#16162A" CornerRadius="0,0,8,8">
+        <Border Grid.Row="3" Background="#16162A" CornerRadius="0,0,0,0">
             <Grid Margin="20,0,20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -532,6 +596,67 @@
                            Foreground="#787D96"
                            FontFamily="Segoe UI"
                            FontSize="12"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- ===== BRANDING / FOOTER ===== -->
+        <Border Grid.Row="4" Background="#0E0E1A" CornerRadius="0,0,8,8" BorderBrush="#282840" BorderThickness="0,1,0,0">
+            <Grid Margin="20,0,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Branding Text -->
+                <TextBlock Grid.Column="0" 
+                           Text="Cipher 🔐 - Open Source Mod Loader/Injector" 
+                           Foreground="#5A5A72"
+                           FontFamily="Segoe UI"
+                           FontSize="11"
+                           VerticalAlignment="Center"/>
+
+                <!-- GitHub Link -->
+                <Button
+                        Content="🐙 GitHub"
+                        Background="Transparent"
+                        Foreground="#89B4FA"
+                        FontFamily="Segoe UI"
+                        FontSize="11"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="GitHubButton_Click"
+                        Margin="503,6,250,4">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="4">
+                                            <ContentPresenter/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#74C7EC"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Version / Build Info -->
+                <TextBlock Grid.Column="2" 
+                           Text="Build Version: 1.0.15" 
+                           Foreground="#3A3A52"
+                           FontFamily="Segoe UI"
+                           FontSize="10"
                            VerticalAlignment="Center"/>
             </Grid>
         </Border>

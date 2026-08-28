@@ -13,6 +13,13 @@ namespace Cipher
         Error = 4
     }
 
+    // NEW: Process status enum
+    public enum ProcessStatus
+    {
+        NotFound = 0,
+        Found = 1
+    }
+
     public class ModItem
     {
         public int Id { get; set; }
@@ -32,12 +39,12 @@ namespace Cipher
             {
                 switch (Status)
                 {
-                    case ModStatus.Updated: return "✅ Updated";
-                    case ModStatus.Ready: return "🟢 Ready";
+                    case ModStatus.Updated: return "✅ Up to Date";
+                    case ModStatus.Ready: return "🟢 Download Ready";
                     case ModStatus.Updating: return "⏳ Updating...";
                     case ModStatus.Missing: return "❌ Missing";
                     case ModStatus.Error: return "⚠️ Error";
-                    default: return "✅ Updated";
+                    default: return "✅ Up to Date";
                 }
             }
         }
@@ -49,7 +56,7 @@ namespace Cipher
             {
                 switch (Status)
                 {
-                    case ModStatus.Updated: return new SolidColorBrush(Color.FromRgb(166, 227, 161));
+                    case ModStatus.Updated: return new SolidColorBrush(Color.FromRgb(100, 182, 250));
                     case ModStatus.Ready: return new SolidColorBrush(Color.FromRgb(137, 180, 250));
                     case ModStatus.Updating: return new SolidColorBrush(Color.FromRgb(249, 226, 175));
                     case ModStatus.Missing: return new SolidColorBrush(Color.FromRgb(243, 139, 168));
@@ -59,17 +66,37 @@ namespace Cipher
             }
         }
 
+        // NEW: Process status properties (replace the old ones)
+        private ProcessStatus _processState = ProcessStatus.NotFound;
+
         [JsonIgnore]
-        public string ProcessStatusText { get; set; } = "";
+        public ProcessStatus ProcessState
+        {
+            get => _processState;
+            set
+            {
+                if (_processState != value)
+                {
+                    _processState = value;
+                    // Update the old properties for backward compatibility
+                    IsGameRunning = (value == ProcessStatus.Found);
+                    ProcessStatusText = (value == ProcessStatus.Found) ? "✅ Found! Game is Running" : "🔍 Searching for Running Process";
+                }
+            }
+        }
+
+        // Keep these for backward compatibility with existing code
+        [JsonIgnore]
+        public string ProcessStatusText { get; set; } = "🔍 Searching for Running Process";
 
         [JsonIgnore]
         public Brush ProcessColor
         {
             get
             {
-                if (string.IsNullOrEmpty(ProcessStatusText))
-                    return new SolidColorBrush(Colors.Transparent);
-                return new SolidColorBrush(Color.FromRgb(137, 180, 250));
+                if (IsGameRunning)
+                    return new SolidColorBrush(Color.FromRgb(166, 227, 161)); // Green
+                return new SolidColorBrush(Color.FromRgb(243, 139, 168)); // Red
             }
         }
 

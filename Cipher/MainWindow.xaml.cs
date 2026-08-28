@@ -27,6 +27,7 @@ namespace Cipher
         private CancellationTokenSource _injectionCancellationToken;
         private Timer _processMonitorTimer;
         private bool _isInitialLoad = true;
+        private bool _isRefreshing = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -78,7 +79,7 @@ namespace Cipher
                 _isInitialLoad = false;
             }
 
-            // Auto-update mods on startup (check for updates)
+            // Auto-update mods on startup ONLY if DLL already exists
             Task.Run(async () => await AutoUpdateMods());
 
             UpdateModCount();
@@ -92,7 +93,22 @@ namespace Cipher
             int updatedCount = 0;
             foreach (var mod in Mods)
             {
-                if (!string.IsNullOrEmpty(mod.DownloadUrl) && mod.Status != ModStatus.Missing)
+                // Skip if no download URL
+                if (string.IsNullOrEmpty(mod.DownloadUrl))
+                    continue;
+
+                // CRITICAL: ONLY auto-update if the DLL already exists
+                bool dllExists = !string.IsNullOrEmpty(mod.DllPath) && File.Exists(mod.DllPath);
+
+                if (!dllExists)
+                {
+                    // Skip auto-update - user needs to download manually first
+                    System.Diagnostics.Debug.WriteLine($"ℹ️ Skipping auto-update for {mod.Name} - DLL not downloaded yet");
+                    continue;
+                }
+
+                // If DLL exists, check for updates
+                if (mod.Status != ModStatus.Missing)
                 {
                     mod.Status = ModStatus.Updating;
                     Dispatcher.Invoke(() => RefreshModList());
@@ -191,34 +207,41 @@ namespace Cipher
 
         private void CheckProcesses(object state)
         {
+            if (_isRefreshing) return;
+            _isRefreshing = true;
+
             try
             {
-                bool updated = false;
+                bool anyChanged = false;
+
                 foreach (var mod in Mods)
                 {
                     bool isRunning = WinAPI.IsProcessRunning(mod.GameTask);
-                    if (mod.IsGameRunning != isRunning)
+                    ProcessStatus newState = isRunning ? ProcessStatus.Found : ProcessStatus.NotFound;
+
+                    if (mod.ProcessState != newState)
                     {
-                        mod.IsGameRunning = isRunning;
-                        if (isRunning)
-                        {
-                            mod.ProcessStatusText = $"🎮 {mod.GameTask} running!";
-                            updated = true;
-                        }
-                        else
-                        {
-                            mod.ProcessStatusText = "";
-                            updated = true;
-                        }
+                        mod.ProcessState = newState;
+                        anyChanged = true;
                     }
                 }
 
-                if (updated)
+                if (anyChanged)
                 {
-                    Dispatcher.Invoke(() => RefreshModList());
+                    Dispatcher.Invoke(() =>
+                    {
+                        ModListBox.Items.Refresh();
+                    });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Process monitoring error: {ex.Message}");
+            }
+            finally
+            {
+                _isRefreshing = false;
+            }
         }
 
         private void RefreshModList()
@@ -563,11 +586,40 @@ namespace Cipher
             }
         }
 
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
         {
-            StatusMessage = "⟳ Refreshing...";
-            RefreshModList();
-            StatusMessage = $"✅ Refreshed - {Mods.Count} mods";
+            if (this.WindowState == WindowState.Normal)
+            {
+                this.WindowState = WindowState.Maximized;
+                var button = sender as Button;
+                if (button != null) button.Content = "❐";
+            }
+            else
+            {
+                this.WindowState = WindowState.Normal;
+                var button = sender as Button;
+                if (button != null) button.Content = "☐";
+            }
+        }
+
+        private void AboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AboutDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        private void GitHubButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start("https://github.com/Deadlineem/Cipher");
+            }
+            catch
+            {
+                MessageBox.Show("Unable to open GitHub page.\nPlease visit:\nhttps://github.com/Deadlineem/Cipher",
+                                "GitHub Link", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void ShowExclusionGuide_Click(object sender, RoutedEventArgs e)

@@ -159,5 +159,16 @@ namespace Cipher
                 return false;
             }
         }
+
+        /// <summary>
+        /// Checks if a mod's DLL file exists on disk
+        /// </summary>
+        public static bool ModFileExists(ModItem mod)
+        {
+            if (mod == null || string.IsNullOrEmpty(mod.DllPath))
+                return false;
+
+            return File.Exists(mod.DllPath);
+        }
     }
 }

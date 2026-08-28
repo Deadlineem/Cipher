@@ -1,9 +1,9 @@
-﻿<Window x:Class="Cipher.HelpDialog"
+﻿<Window x:Class="Cipher.AboutDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="⚠️ Help - Antivirus Exclusion Guide" 
-        Height="700" 
-        Width="900"
+        Title="📖 About Cipher" 
+        Height="550" 
+        Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -32,7 +32,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" 
-                               Text="⚠️ Help - Antivirus Exclusion Guide" 
+                               Text="📖 About Cipher" 
                                FontFamily="Segoe UI" 
                                FontSize="14" 
                                FontWeight="Bold"
@@ -82,103 +82,150 @@
                           Background="#12121E"
                           Margin="20,16,20,16">
                 <StackPanel>
-                    <!-- Warning Icon -->
-                    <TextBlock Text="⚠️" 
-                               FontSize="48" 
+                    <!-- App Icon -->
+                    <TextBlock Text="🔐" 
+                               FontSize="64" 
                                HorizontalAlignment="Center"
-                               Foreground="Orange"
-                               Margin="0,0,0,12"/>
+                               Foreground="#DCE0F0"
+                               Margin="0,10,0,10"/>
 
-                    <!-- Title -->
-                    <TextBlock Text="Is your Antivirus Triggering from Cipher?"
+                    <!-- App Name -->
+                    <TextBlock Text="Cipher" 
                                FontFamily="Segoe UI"
-                               FontSize="16"
+                               FontSize="28"
                                FontWeight="Bold"
                                Foreground="#DCE0F0"
                                HorizontalAlignment="Center"
-                               Margin="0,0,0,16"/>
+                               Margin="0,0,0,4"/>
+
+                    <!-- Tagline -->
+                    <TextBlock Text="Mod Loader &amp; Injector" 
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               Foreground="#969BB4"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Divider -->
+                    <Border Height="1" Background="#282840" Margin="0,0,0,16"/>
+
+                    <!-- Version -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" 
+                                   Text="Version:" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#969BB4"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text="1.0.15" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   Foreground="#DCE0F0"/>
+                    </Grid>
+
+                    <!-- Build Date -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" 
+                                   Text="Build:" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#969BB4"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text="{Binding BuildDate}" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   Foreground="#DCE0F0"/>
+                    </Grid>
+
+                    <!-- License -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" 
+                                   Text="License:" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#969BB4"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text="MIT" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   Foreground="#89B4FA"/>
+                    </Grid>
+
+                    <!-- Framework -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" 
+                                   Text="Framework:" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#969BB4"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text=".NET Framework 4.7.2" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="12"
+                                   Foreground="#DCE0F0"/>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Border Height="1" Background="#282840" Margin="0,0,0,16"/>
 
                     <!-- Description -->
                     <TextBlock TextWrapping="Wrap"
                                FontFamily="Segoe UI"
-                               FontSize="13"
-                               Foreground="#B4B9D2"
-                               Margin="0,0,0,16">
-                        <Run Text="Cipher comes with 3 pre-configured mods for RDR2, GTA 5 Legacy, and GTA 5 Enhanced. "/>
-                        <Run Text="These are open-source DLL files that may be flagged by your antivirus as a false positive. "/>
-                        <Run Text="You can safely delete these mods from Cipher and add your own but you will likely still need to add an exclusion to the Cipher folder in your APPDATA folder"/>
-                    </TextBlock>
-
-                    <TextBlock Text="To find APPDATA -> Open File Explorer -> Type %APPDATA% into the top bar and press ENTER then locate the Cipher folder"
-                               FontFamily="Segoe UI"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="#DCE0F0"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,12"/>
-
-                    <!-- Divider -->
-                    <Border Height="1" Background="#282840" Margin="0,8,0,16"/>
-
-                    <!-- Step-by-step Guide -->
-                    <TextBlock Text="🛡️ How to Add an Antivirus Exclusion (Windows Defender)"
-                               FontFamily="Segoe UI"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="#DCE0F0"
-                               Margin="0,0,0,12"/>
-
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Segoe UI"
                                FontSize="12"
                                Foreground="#B4B9D2"
-                               LineHeight="22">
-                        <Run Text="1. "/><Run Text="Open Windows Security" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="2. "/><Run Text="Click 'Virus &amp; threat protection'" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="3. "/><Run Text="Click 'Manage settings' (under Virus &amp; threat protection settings)" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="4. "/><Run Text="Scroll down to 'Exclusions'" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="5. "/><Run Text="Click 'Add or remove exclusions'" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="6. "/><Run Text="Click 'Add an exclusion' → Select 'Folder'" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="7. "/><Run Text="Browse to: " FontWeight="Bold"/>
-                        <Run Text="%APPDATA%" Foreground="#89B4FA" FontWeight="Bold"/>
-                        <Run Text=" (Top bar) -> Click Cipher folder -> Press Open (Bottom right)" FontWeight="Bold"/>
-                        <LineBreak/>
-                        <Run Text="8. "/><Run Text="Confirm and close Windows Security" FontWeight="Bold"/>
+                               Margin="0,0,0,8">
+                        <Run Text="A modern, open-source Windows application for managing,"/>
+                        <Run Text="downloading and injecting mod DLLs into Processes using LoadLibraryA and CreateRemoteThread."/>
                     </TextBlock>
 
-                    <!-- Divider -->
-                    <Border Height="1" Background="#282840" Margin="0,16,0,16"/>
-
-                    <!-- Note -->
+                    <!-- GitHub Link -->
                     <Border Background="#1A1A2A" 
                             CornerRadius="8" 
-                            Padding="12"
-                            Margin="0,0,0,8">
-                        <TextBlock TextWrapping="Wrap"
-                                   FontFamily="Segoe UI"
-                                   FontSize="12"
-                                   Foreground="#F9E2AF">
-                            <Run Text="✅ "/>
-                            <Run Text="After adding the exclusion, click 'Download' on each mod to download them."/>
-                        </TextBlock>
-                    </Border>
+                            Padding="12,10,12,10"
+                            Margin="0,8,0,0"
+                            Cursor="Hand"
+                            MouseLeftButtonDown="GitHubLink_Click">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                    <Border Background="#1A1A2A" 
-                            CornerRadius="8" 
-                            Padding="12">
-                        <TextBlock TextWrapping="Wrap"
-                                   FontFamily="Segoe UI"
-                                   FontSize="12"
-                                   Foreground="#89B4FA">
-                            <Run Text="⚠️ "/>
-                            <Run Text="Note: All pre-added mods are open source, fully tested, and safe to use."/>
-                        </TextBlock>
+                            <TextBlock Grid.Column="0" 
+                                       Text="🐙 Check out the project on Github!" 
+                                       FontFamily="Segoe UI"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="#89B4FA"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="1" 
+                                       Text="→" 
+                                       FontFamily="Segoe UI"
+                                       FontSize="14"
+                                       Foreground="#89B4FA"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
                     </Border>
                 </StackPanel>
             </ScrollViewer>
@@ -192,7 +239,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" 
-                               Text="Need more help? Visit the GitHub repository for support. https://github.com/Deadlineem/Cipher"
+                               Text="© 2026 Cipher Team" 
                                FontFamily="Segoe UI"
                                FontSize="11"
                                Foreground="#787D96"

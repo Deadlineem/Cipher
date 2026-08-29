@@ -186,7 +186,7 @@ jobs:
         name: Cipher Nightly (Latest)
         tag_name: nightly
         draft: false
-        prerelease: true
+        prerelease: false
         body: |
           # 🔐 Cipher Nightly Build (Latest)
 

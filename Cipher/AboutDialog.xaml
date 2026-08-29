@@ -122,7 +122,7 @@
                                    FontWeight="Bold"
                                    Foreground="#969BB4"/>
                         <TextBlock Grid.Column="1" 
-                                   Text="1.0.15" 
+                                   Text="{Binding Ver}" 
                                    FontFamily="Segoe UI"
                                    FontSize="12"
                                    Foreground="#DCE0F0"/>
@@ -135,7 +135,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" 
-                                   Text="Build:" 
+                                   Text="Build Date:" 
                                    FontFamily="Segoe UI"
                                    FontSize="12"
                                    FontWeight="Bold"

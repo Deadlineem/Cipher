@@ -150,9 +150,15 @@
       <DependentUpon>AddModDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="fetch.cs" />
+    <Page Include="GameLauncherDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HelpDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Compile Include="GameLauncherDialog.xaml.cs">
+      <DependentUpon>GameLauncherDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="HelpDialog.xaml.cs" />
     <Compile Include="WinAPI.cs" />
     <Page Include="AddModDialog.xaml">

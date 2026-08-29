@@ -28,7 +28,8 @@ namespace Cipher
         private Timer _processMonitorTimer;
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
-
+        public static string Ver => "1.0.17";
+        public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<ModItem> Mods
@@ -330,6 +331,133 @@ namespace Cipher
                 RefreshModList();
                 SaveMods();
                 StatusMessage = $"✅ Added: {newMod.Name}";
+            }
+        }
+
+        private void StartGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            ModItem mod = null;
+
+            // Check if the button was clicked from the toolbar or from the per-mod button
+            if (sender is Button button && button.Tag is ModItem taggedMod)
+            {
+                // Per-mod button was clicked
+                mod = taggedMod;
+            }
+            else
+            {
+                // Toolbar button was clicked - use selected mod
+                mod = SelectedMod;
+            }
+
+            if (mod == null)
+            {
+                StatusMessage = "⚠️ Select a mod first to start its game!";
+                return;
+            }
+
+            string gameName = mod.Name;
+            string gameTask = mod.GameTask;
+
+            // Check if game is already running
+            if (WinAPI.IsProcessRunning(gameTask))
+            {
+                StatusMessage = $"✅ {gameTask} is already running!";
+                return;
+            }
+
+            // Check if we have a saved launch path for this game
+            string savedPath = GetSavedGameLaunchPath(gameTask);
+            if (!string.IsNullOrEmpty(savedPath))
+            {
+                StatusMessage = $"🎮 Launching {gameName}...";
+                if (GameLauncherDialog.LaunchGame(savedPath))
+                {
+                    StatusMessage = $"✅ {gameName} launched!";
+                    return;
+                }
+                else
+                {
+                    StatusMessage = $"⚠️ Failed to launch with saved path. Please update it.";
+                }
+            }
+
+            // Show the launcher dialog
+            var dialog = new GameLauncherDialog(gameName, gameTask);
+            dialog.Owner = this;
+
+            if (dialog.ShowDialog() == true)
+            {
+                string launchPath = dialog.EnteredPath;
+
+                // Auto-detect and convert Steam/Epic/Rockstar paths to protocols
+                launchPath = GameLauncherDialog.DetectAndConvertPath(launchPath, gameName);
+
+                // Save if user requested
+                if (dialog.SaveLocation)
+                {
+                    SaveGameLaunchPath(gameTask, launchPath);
+                    StatusMessage = $"✅ Launch path saved for {gameName}";
+                }
+
+                // Launch the game
+                StatusMessage = $"🎮 Launching {gameName}...";
+                if (GameLauncherDialog.LaunchGame(launchPath))
+                {
+                    StatusMessage = $"✅ {gameName} launched!";
+                }
+                else
+                {
+                    StatusMessage = $"❌ Failed to launch {gameName}. Please check the path.";
+                }
+            }
+        }
+
+        // ============================================
+        // SAVE/LOAD GAME LAUNCH PATHS
+        // ============================================
+
+        private string GetSavedGameLaunchPath(string gameTask)
+        {
+            try
+            {
+                string settingsPath = Path.Combine(appDataPath, "launch_paths.json");
+                if (!File.Exists(settingsPath))
+                    return null;
+
+                var json = File.ReadAllText(settingsPath);
+                var paths = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                if (paths != null && paths.TryGetValue(gameTask, out string savedPath))
+                    return savedPath;
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void SaveGameLaunchPath(string gameTask, string launchPath)
+        {
+            try
+            {
+                string settingsPath = Path.Combine(appDataPath, "launch_paths.json");
+                Dictionary<string, string> paths = new Dictionary<string, string>();
+
+                if (File.Exists(settingsPath))
+                {
+                    var json = File.ReadAllText(settingsPath);
+                    paths = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                }
+
+                paths[gameTask] = launchPath;
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                File.WriteAllText(settingsPath, JsonSerializer.Serialize(paths, options));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to save launch path: {ex.Message}");
             }
         }
 

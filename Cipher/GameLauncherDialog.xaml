@@ -1,0 +1,229 @@
+﻿<Window x:Class="Cipher.GameLauncherDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="🎮 Launch Game" 
+        Height="400" 
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Border Background="#12121E" 
+            CornerRadius="12,12,12,12" 
+            BorderBrush="#282840" 
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== TITLE BAR ===== -->
+            <Border Grid.Row="0" Background="#1E1E32" CornerRadius="12,12,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                               Text="🎮 Launch Game" 
+                               FontFamily="Segoe UI" 
+                               FontSize="14" 
+                               FontWeight="Bold"
+                               Foreground="#DCE0F0"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"/>
+
+                    <Button Grid.Column="1" 
+                            Content="✕" 
+                            Width="28" Height="28" 
+                            FontSize="14"
+                            Background="Transparent" 
+                            Foreground="#8A8AA0"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,12,0"
+                            Click="CloseButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E74C4C"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ===== CONTENT ===== -->
+            <Grid Grid.Row="1" Margin="20,16,20,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Game Name -->
+                <TextBlock Grid.Row="0" 
+                           Text="{Binding GameDisplayName}" 
+                           FontFamily="Segoe UI"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#DCE0F0"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,12"/>
+
+                <!-- Instructions -->
+                <TextBlock Grid.Row="1" 
+                           Text="Enter the path to the game executable or a launcher protocol:"
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           Foreground="#969BB4"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,12"/>
+
+                <!-- Examples -->
+                <Border Grid.Row="2" 
+                        Background="#1A1A2A" 
+                        CornerRadius="8" 
+                        Padding="12,8,12,8"
+                        Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="📂 Examples:" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   Foreground="#DCE0F0" Height="20"/>
+                        <TextBlock Text="  C:\Program Files\Steam\steamapps\common\RDR2\RDR2.exe" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="11"
+                                   Foreground="#89B4FA"/>
+                        <TextBlock Text="  steam://rungameid/1404210" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="11"
+                                   Foreground="#89B4FA"/>
+                        <TextBlock Text="  rockstargames://launch/rdr2" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="11"
+                                   Foreground="#89B4FA"/>
+                        <TextBlock Text="  com.epicgames.launcher://apps/rdr2?action=launch" 
+                                   FontFamily="Segoe UI"
+                                   FontSize="11"
+                                   Foreground="#89B4FA"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Input Field -->
+                <TextBox Grid.Row="3" 
+                         x:Name="PathTextBox"
+                         Background="#1A1A2A" 
+                         Foreground="#DCE0F0"
+                         BorderBrush="#32324A"
+                         BorderThickness="1"
+                         Padding="10"
+                         FontFamily="Segoe UI"
+                         FontSize="13"
+                         Margin="0,9,0,1"
+                         KeyDown="PathTextBox_KeyDown"/>
+
+                <!-- Buttons -->
+                <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,27,0,42" Grid.RowSpan="2">
+                    <Button Content="📂 Browse..." 
+                            Background="#32324A" 
+                            Foreground="#DCE0F0"
+                            FontFamily="Segoe UI" 
+                            FontSize="12" 
+                            FontWeight="Bold"
+                            Padding="12,8,12,8"
+                            Cursor="Hand"
+                            Click="BrowseButton_Click"
+                            Margin="0,0,10,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#42425A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="🎮 Launch Game" 
+                            Background="#89B4FA" 
+                            Foreground="#12121E"
+                            FontFamily="Segoe UI" 
+                            FontSize="12" 
+                            FontWeight="Bold"
+                            Padding="12,8,12,8"
+                            Cursor="Hand"
+                            Click="LaunchButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#74C7EC"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+
+                <!-- Save checkbox -->
+                <CheckBox Grid.Row="5" 
+                          x:Name="SaveCheckBox"
+                          Content="Remember this location for future launches"
+                          Foreground="#969BB4"
+                          FontFamily="Segoe UI"
+                          FontSize="11"
+                          Margin="0,12,0,0"
+                          VerticalAlignment="Bottom"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

@@ -343,21 +343,21 @@
                 <Border Grid.Row="0" Background="#1A1A2A" CornerRadius="8,8,0,0">
                     <Grid Margin="12,0,12,0">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="1.2*"/>
-                            <ColumnDefinition Width="1.0*"/>
-                            <ColumnDefinition Width="2.5*"/>
-                            <ColumnDefinition Width="0.8*"/>
+                            <ColumnDefinition Width="222*"/>
+                            <ColumnDefinition Width="178*"/>
+                            <ColumnDefinition Width="148*"/>
+                            <ColumnDefinition Width="307*"/>
+                            <ColumnDefinition Width="181*"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" 
+                        <TextBlock 
                                    Text="Mod Name" 
                                    Foreground="#969BB4" 
                                    FontFamily="Segoe UI" 
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
+                                   HorizontalAlignment="Center" Height="14" Width="58"/>
 
                         <TextBlock Grid.Column="1" 
                                    Text="Inject To" 
@@ -366,7 +366,7 @@
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
+                                   HorizontalAlignment="Center" Height="14" Width="44"/>
 
                         <TextBlock Grid.Column="2" 
                                    Text="Update Status" 
@@ -375,7 +375,7 @@
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
+                                   HorizontalAlignment="Left" Height="14" Width="72" Margin="8,0,0,0"/>
 
                         <TextBlock Grid.Column="3" 
                                    Text="Process Detection Status" 
@@ -384,7 +384,7 @@
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
+                                   HorizontalAlignment="Left" Height="14" Width="128" Margin="60,0,0,0"/>
 
                         <TextBlock Grid.Column="4" 
                                    Text="Quick Actions" 
@@ -393,7 +393,7 @@
                                    FontSize="11" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
+                                   HorizontalAlignment="Center" Height="14" Width="72"/>
                     </Grid>
                 </Border>
 
@@ -478,6 +478,38 @@
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Center"
                                                 Margin="0,0,0,0">
+                                        <Button Content="🎮 Start Game" 
+                                                Background="#CBA6F7" 
+                                                Foreground="#12121E"
+                                                FontFamily="Segoe UI"
+                                                Margin="0,0,3,0"
+                                                FontSize="9" 
+                                                FontWeight="Bold"
+                                                Padding="6,4,6,4"
+                                                Cursor="Hand"
+                                                Click="StartGameButton_Click"
+                                                Tag="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                        CornerRadius="6"
+                                                                        Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#F5C2E7"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                         <Button Content="⬇ Download" 
                                                 Background="#A6E3A1" 
                                                 Foreground="#12121E"
@@ -654,7 +686,7 @@
 
                 <!-- Version / Build Info -->
                 <TextBlock Grid.Column="2" 
-                           Text="Build Version: 1.0.15" 
+                           Text="{Binding BuildVer}" 
                            Foreground="#3A3A52"
                            FontFamily="Segoe UI"
                            FontSize="10"

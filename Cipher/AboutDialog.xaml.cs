@@ -7,12 +7,14 @@ namespace Cipher
 {
     public partial class AboutDialog : Window
     {
+        public string Ver { get; set; }
         public string BuildDate { get; set; }
 
         public AboutDialog()
         {
             InitializeComponent();
             DataContext = this;
+            Ver = MainWindow.Ver;
             BuildDate = DateTime.Now.ToString("yyyy.MM.dd");
         }
 

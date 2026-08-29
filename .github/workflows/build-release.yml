@@ -43,41 +43,6 @@ jobs:
       run: |
         msbuild Cipher.sln /p:Configuration=Release /p:Platform=x86 /verbosity:minimal
 
-    - name: Create README file
-      shell: pwsh
-      run: |
-        $version = "${{ github.ref_name }}"
-        if ($version -eq "") { $version = "dev-build" }
-        
-        $readmeContent = @"
-        Cipher v1.0 - $version
-        ========================
-        Build Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
-        Build Hash: ${{ github.sha }}
-        
-        ## 🚀 Download (Single EXE - No installation required)
-        - **Cipher_x64.exe** - For 64-bit games (RDR2, GTA5 Enhanced, modern games)
-        - **Cipher_x86.exe** - For 32-bit games (GTA5 Legacy, older games)
-        
-        ## 📦 How to Use
-        1. Download the correct EXE for your system
-        2. Run as Administrator (right-click → Run as administrator)
-        3. Click "Add Mod" to add your mods
-        4. Click "Download" to download mod DLLs
-        5. Click "Inject" to inject into running games
-        
-        ## ⚠️ Important
-        1. **Run as Administrator** - Required for DLL injection
-        2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
-        3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
-        
-        ## 🛡️ Antivirus Exclusion
-        Add an exclusion for: `%APPDATA%\Cipher`
-        
-        For help, click the "Help" button in the app.
-        "@
-        $readmeContent | Out-File -FilePath README.txt -Encoding UTF8
-
     - name: Copy Single EXE (x64)
       shell: pwsh
       run: |
@@ -140,12 +105,6 @@ jobs:
         name: Cipher_x86
         path: Cipher_x86.exe
 
-    - name: Upload README
-      uses: actions/upload-artifact@v4
-      with:
-        name: README
-        path: README.txt
-
     - name: Download x64 Artifact
       uses: actions/download-artifact@v4
       with:
@@ -156,12 +115,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: Cipher_x86
-        path: release_artifacts/
-
-    - name: Download README
-      uses: actions/download-artifact@v4
-      with:
-        name: README
         path: release_artifacts/
 
     - name: Verify Downloaded Artifacts
@@ -237,12 +190,11 @@ jobs:
         body: |
           # 🔐 Cipher Nightly Build (Latest)
 
-          ## 🚀 Download (Single EXE - No installation required)
+          ## 🚀 Download (No installation required)
           - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended)
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
-          - **Build Date:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
           - **Commit:** ${{ github.sha }}
           - **Trigger:** ${{ github.event_name }}
 
@@ -256,6 +208,7 @@ jobs:
           1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
           2. Click "Add Mod" to add your mods
           3. Click "Download" to download mod DLLs
+          4. Click "Start Game" to launch your game (First time use will display a prompt to enter the games path or protocol for launching)
           4. Click "Inject" to inject into running games
 
           ## 🛡️ Antivirus Exclusion
@@ -264,7 +217,7 @@ jobs:
         files: |
           release_artifacts/Cipher_x64.exe
           release_artifacts/Cipher_x86.exe
-          release_artifacts/README.txt
+
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
@@ -279,32 +232,33 @@ jobs:
         body: |
           # 🔐 Cipher ${{ github.ref_name }}
 
-          ## 🚀 Download (Single EXE - No installation required)
-          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x64.exe)** - For 64-bit games (recommended)
-          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Cipher_x86.exe)** - For 32-bit games
+          ## 🚀 Download (No installation required)
+          - **[Cipher_x64.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x64.exe)** - For 64-bit games (recommended)
+          - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
-          ## 📝 What's New
-          - Stable release build
-          - Single EXE - no dependencies needed
-          - Ready to use, no installation required
+          ## 📝 Build Information
+          - **Commit:** ${{ github.sha }}
+          - **Trigger:** ${{ github.event_name }}
 
           ## ⚠️ Important
-          1. **Run as Administrator** - Required for DLL injection
-          2. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder
-          3. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
+          1. **Move to your Desktop & Add an antivirus exclusion for the file** - Required as the program uses CreateRemoteThread() for injecting DLL files.
+          2. **Run as Administrator** - Required for DLL injection
+          3. **Add antivirus exclusion** for `%APPDATA%\Cipher` folder - Required to store mod files in Cipher folder
+          4. **Use the correct version** - x64 for 64-bit games, x86 for 32-bit games
 
           ## 🛠️ Usage
           1. Run `Cipher_x64.exe` or `Cipher_x86.exe` as Administrator
           2. Click "Add Mod" to add your mods
           3. Click "Download" to download mod DLLs
+          4. Click "Start Game" to launch your game (First time use will display a prompt to enter the games path or protocol for launching)
           4. Click "Inject" to inject into running games
 
           ## 🛡️ Antivirus Exclusion
-          Add an exclusion for: `%APPDATA%\Cipher`
+          Add an exclusion for: `%APPDATA%\Cipher` && `Cipher_<x64|x86>.exe` in Windows Defender or Other antivirus program.
 
         files: |
           release_artifacts/Cipher_x64.exe
           release_artifacts/Cipher_x86.exe
-          release_artifacts/README.txt
+          
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

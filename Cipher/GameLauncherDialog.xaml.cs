@@ -132,17 +132,6 @@ namespace Cipher
                 return input;
             }
 
-            // Check if it's a Rockstar Games path
-            if (input.Contains("Rockstar Games"))
-            {
-                string lowerInput = input.ToLower();
-                if (lowerInput.Contains("rdr2") || lowerInput.Contains("red dead"))
-                    return "rockstargames://launch/rdr2";
-                if (lowerInput.Contains("gta5") || lowerInput.Contains("gta v"))
-                    return "rockstargames://launch/gta5";
-                return input;
-            }
-
             return input;
         }
 

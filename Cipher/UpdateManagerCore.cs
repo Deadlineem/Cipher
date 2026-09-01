@@ -293,7 +293,7 @@ namespace Cipher
 
             string scriptContent = $@"@echo off
 echo Updating Cipher to version {version}...
-timeout /t 2 /nobreak > nul
+timeout /t 1 /nobreak > nul
 
 :: Kill any running instances
 taskkill /f /im ""{exeName}"" > nul 2>&1
@@ -304,11 +304,10 @@ cd /d ""{exeDir}""
 copy /Y ""{newExePath}"" ""{exeName}""
 
 :: Clean up
-timeout /t 1 /nobreak > nul
 rmdir /s /q ""{tempFolder}"" 2>nul
 
 :: Wait a moment for the file system to settle
-timeout /t 3 /nobreak > nul
+timeout /t 1 /nobreak > nul
 
 :: Launch updated application
 echo Launching Cipher...

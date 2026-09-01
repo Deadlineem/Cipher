@@ -426,7 +426,7 @@ namespace Cipher
                 }
                 else
                 {
-                    StatusMessage = $"⚠️ Failed to launch with saved path. Please update it.";
+                    StatusMessage = "⚠️ Failed to launch with saved path. Please update it.";
                 }
             }
 
@@ -436,10 +436,8 @@ namespace Cipher
 
             if (dialog.ShowDialog() == true)
             {
+                // FIX: Pull down the path (it was already auto-detected and converted inside the dialog)
                 string launchPath = dialog.EnteredPath;
-
-                // Auto-detect and convert Steam/Epic/Rockstar paths to protocols
-                launchPath = GameLauncherDialog.DetectAndConvertPath(launchPath, gameName);
 
                 // Save if user requested
                 if (dialog.SaveLocation)
@@ -447,9 +445,12 @@ namespace Cipher
                     SaveGameLaunchPath(gameTask, launchPath);
                     StatusMessage = $"✅ Launch path saved for {gameName}";
                 }
+                else
+                {
+                    StatusMessage = $"🎮 Launching {gameName}...";
+                }
 
                 // Launch the game
-                StatusMessage = $"🎮 Launching {gameName}...";
                 if (GameLauncherDialog.LaunchGame(launchPath))
                 {
                     StatusMessage = $"✅ {gameName} launched!";
@@ -460,6 +461,7 @@ namespace Cipher
                 }
             }
         }
+
 
         // ============================================
         // SAVE/LOAD GAME LAUNCH PATHS

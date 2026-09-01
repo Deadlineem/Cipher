@@ -191,7 +191,6 @@ Always backup your game files before using mods and never mod games online.
 | Resource | Link |
 |----------|------|
 | **Issues** | [GitHub Issues](https://github.com/Deadlineem/Cipher/issues) |
-| **Discussions** | [GitHub Discussions](https://github.com/Deadlineem/Cipher/discussions) |
 
 ---
 

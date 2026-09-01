@@ -66,6 +66,8 @@ namespace Cipher
                 {
                     SetStatus("✅", "Up to Date!", $"You're running the latest version (v{currentVersion})");
                     ChangelogText.Text = "You are already running the latest version of Cipher.";
+                    ActionButton.Content = "Up to date!";
+                    ActionButton.IsEnabled = false;
                     FooterStatus.Text = "No update needed";
                 }
             }
@@ -73,6 +75,8 @@ namespace Cipher
             {
                 SetStatus("❌", "Error checking for updates", ex.Message);
                 ChangelogText.Text = $"Error: {ex.Message}";
+                ActionButton.Content = "Error";
+                ActionButton.IsEnabled = false;
             }
         }
 

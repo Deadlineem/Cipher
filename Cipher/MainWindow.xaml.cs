@@ -29,7 +29,7 @@ namespace Cipher
         private Timer _processMonitorTimer;
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
-        public static string Ver => "1.0.17";
+        public static string Ver => "1.0.18";
         public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 

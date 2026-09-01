@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -9,7 +8,6 @@ namespace Cipher
     public partial class UpdateManager : Window
     {
         private UpdateInfo _updateInfo;
-        private string _currentCommit;
         private bool _isUpdateAvailable;
         private bool _isUpdating = false;
 
@@ -33,41 +31,40 @@ namespace Cipher
                 ActionButton.IsEnabled = false;
 
                 _updateInfo = await UpdateManagerCore.CheckForUpdatesAsync();
-                _currentCommit = UpdateManagerCore.GetCurrentCommitHash();
 
                 if (_updateInfo == null)
                 {
                     SetStatus("❌", "Failed to check for updates", "Check your internet connection");
-                    CurrentVersionText.Text = "Unknown";
+                    CurrentVersionText.Text = $"v{MainWindow.Ver}";
                     NewVersionText.Text = "Unknown";
                     ChangelogText.Text = "Unable to check for updates. Please check your internet connection and try again.";
                     return;
                 }
 
-                // Get version from MainWindow
                 string currentVersion = MainWindow.Ver;
-                string shortCurrent = _currentCommit.Length > 7 ? _currentCommit.Substring(0, 7) : _currentCommit;
-                string shortNew = _updateInfo.CommitHash.Length > 7 ? _updateInfo.CommitHash.Substring(0, 7) : _updateInfo.CommitHash;
+                CurrentVersionText.Text = $"v{currentVersion}";
+                NewVersionText.Text = $"{_updateInfo.Version}";
 
-                CurrentVersionText.Text = $"v{currentVersion} ({shortCurrent})";
-                NewVersionText.Text = $"{_updateInfo.Version} ({shortNew})";
-
-                // Check if update is available
-                _isUpdateAvailable = UpdateManagerCore.IsUpdateAvailable(_updateInfo, _currentCommit);
+                // Check if update is available using version comparison
+                _isUpdateAvailable = UpdateManagerCore.IsUpdateAvailable(_updateInfo);
 
                 if (_isUpdateAvailable)
                 {
+                    string shortNewHash = _updateInfo.CommitHash.Length > 7 ?
+                        _updateInfo.CommitHash.Substring(0, 7) :
+                        _updateInfo.CommitHash;
+
                     SetStatus("📢", "Update Available!", $"Version {_updateInfo.Version} is ready to install");
                     ChangelogText.Text = string.IsNullOrEmpty(_updateInfo.Changelog) ?
                         "No changelog provided." :
                         _updateInfo.Changelog;
                     ActionButton.Content = "Update Now";
                     ActionButton.IsEnabled = true;
-                    FooterStatus.Text = $"Released: {_updateInfo.ReleaseDate}";
+                    FooterStatus.Text = $"Released: {_updateInfo.ReleaseDate} (Commit: {shortNewHash})";
                 }
                 else
                 {
-                    SetStatus("✅", "Up to Date!", $"You're running the latest version");
+                    SetStatus("✅", "Up to Date!", $"You're running the latest version (v{currentVersion})");
                     ChangelogText.Text = "You are already running the latest version of Cipher.";
                     ActionButton.Content = "Close";
                     ActionButton.IsEnabled = true;
@@ -104,8 +101,8 @@ namespace Cipher
             // Confirm update
             var result = MessageBox.Show(
                 $"Are you sure you want to update Cipher?\n\n" +
-                $"Current: {CurrentVersionText.Text}\n" +
-                $"New: {NewVersionText.Text}\n\n" +
+                $"Current Version: v{MainWindow.Ver}\n" +
+                $"New Version: {_updateInfo.Version}\n\n" +
                 $"The application will close and restart after the update.",
                 "Confirm Update",
                 MessageBoxButton.YesNo,

@@ -12,11 +12,11 @@ namespace Cipher
 {
     public class UpdateInfo
     {
-        public string Version { get; set; }
-        public string CommitHash { get; set; }
+        public string Version { get; set; }          // e.g., "1.0.17"
         public string DownloadUrl { get; set; }
         public string ReleaseDate { get; set; }
         public string Changelog { get; set; }
+        public string CommitHash { get; set; }
     }
 
     public static class UpdateManagerCore
@@ -24,6 +24,7 @@ namespace Cipher
         private static readonly HttpClient client = new HttpClient();
         private static readonly string UpdateInfoUrl = "https://api.github.com/repos/Deadlineem/Cipher/releases/tags/nightly";
         private static readonly string BaseDownloadUrl = "https://github.com/Deadlineem/Cipher/releases/download/nightly/";
+        private static readonly string OutdatedUrl = "https://github.com/Deadlineem/Cipher/releases/download/nightly/outdated/";
 
         private static string GetExecutableName()
         {
@@ -36,6 +37,21 @@ namespace Cipher
                 return "Cipher_x86.exe";
 
             return Environment.Is64BitProcess ? "Cipher_x64.exe" : "Cipher_x86.exe";
+        }
+
+        // Parse version string like "1.0.17" to Version object
+        private static Version ParseVersion(string versionStr)
+        {
+            if (string.IsNullOrEmpty(versionStr))
+                return null;
+
+            // Remove any non-version characters (e.g., "v1.0.17" -> "1.0.17")
+            string cleanVersion = versionStr.TrimStart('v', 'V');
+
+            if (Version.TryParse(cleanVersion, out var version))
+                return version;
+
+            return null;
         }
 
         public static async Task<UpdateInfo> CheckForUpdatesAsync()
@@ -52,15 +68,20 @@ namespace Cipher
                 string json = await response.Content.ReadAsStringAsync();
                 var release = JsonSerializer.Deserialize<JsonElement>(json);
 
+                // Get tag name (this should be the version)
                 string tagName = release.GetProperty("tag_name").GetString();
+
+                // Get commit hash from target_commitish
                 string commitHash = release.TryGetProperty("target_commitish", out var commitElement)
                     ? commitElement.GetString()
                     : string.Empty;
 
+                // Get changelog/body
                 string changelog = release.TryGetProperty("body", out var bodyElement)
                     ? bodyElement.GetString()
                     : string.Empty;
 
+                // Get release date
                 string releaseDate = release.TryGetProperty("published_at", out var dateElement)
                     ? dateElement.GetString()
                     : string.Empty;
@@ -84,6 +105,26 @@ namespace Cipher
             }
         }
 
+        public static bool IsUpdateAvailable(UpdateInfo remote)
+        {
+            if (remote == null || string.IsNullOrEmpty(remote.Version))
+                return false;
+
+            // Get current version from MainWindow
+            string currentVersionStr = MainWindow.Ver;
+            Version currentVersion = ParseVersion(currentVersionStr);
+            Version remoteVersion = ParseVersion(remote.Version);
+
+            if (currentVersion == null || remoteVersion == null)
+            {
+                // Fallback: compare as strings if parsing fails
+                return !string.Equals(currentVersionStr, remote.Version, StringComparison.OrdinalIgnoreCase);
+            }
+
+            // Compare versions - update available if remote version is greater
+            return remoteVersion > currentVersion;
+        }
+
         public static async Task<bool> DownloadAndInstallUpdateAsync(UpdateInfo update, IProgress<string> progress = null)
         {
             try
@@ -96,7 +137,7 @@ namespace Cipher
                     Directory.CreateDirectory(tempFolder);
 
                 string tempExePath = Path.Combine(tempFolder, exeName);
-                progress?.Report($"Downloading update...");
+                progress?.Report($"Downloading update {update.Version}...");
 
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Add("User-Agent", "Cipher-Updater");
@@ -137,16 +178,32 @@ namespace Cipher
         private static string CreateUpdateScript(string currentExe, string newExePath, string tempFolder)
         {
             string scriptPath = Path.Combine(tempFolder, "update.bat");
+            string exeName = Path.GetFileName(currentExe);
+            string exeNameNoExt = Path.GetFileNameWithoutExtension(currentExe);
+            string exeDir = Path.GetDirectoryName(currentExe);
+            string version = MainWindow.Ver;
 
             string scriptContent = $@"@echo off
+echo Updating Cipher to version {version}...
 timeout /t 2 /nobreak > nul
-taskkill /f /im ""{Path.GetFileName(currentExe)}"" > nul 2>&1
-cd /d ""{Path.GetDirectoryName(currentExe)}""
-if exist ""{Path.GetFileNameWithoutExtension(currentExe)}_backup.exe"" del ""{Path.GetFileNameWithoutExtension(currentExe)}_backup.exe""
-ren ""{Path.GetFileName(currentExe)}"" ""{Path.GetFileNameWithoutExtension(currentExe)}_backup.exe""
-copy ""{newExePath}"" ""{Path.GetFileName(currentExe)}""
+
+:: Kill any running instances
+taskkill /f /im ""{exeName}"" > nul 2>&1
+
+cd /d ""{exeDir}""
+
+:: Backup current version with version number
+if exist ""{exeNameNoExt}_v{version}_backup.exe"" del ""{exeNameNoExt}_v{version}_backup.exe""
+ren ""{exeName}"" ""{exeNameNoExt}_v{version}_backup.exe""
+
+:: Copy new version
+copy ""{newExePath}"" ""{exeName}""
+
+:: Clean up
 timeout /t 1 /nobreak > nul
 rmdir /s /q ""{tempFolder}"" 2>nul
+
+echo Update complete! Starting Cipher...
 start """" ""{currentExe}""
 exit
 ";
@@ -155,36 +212,9 @@ exit
             return scriptPath;
         }
 
-        public static string GetCurrentCommitHash()
+        public static string GetCurrentVersion()
         {
-            try
-            {
-                var assembly = Assembly.GetEntryAssembly();
-                var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-
-                string productVersion = versionInfo.ProductVersion;
-                if (!string.IsNullOrEmpty(productVersion) && productVersion.Contains("+"))
-                {
-                    return productVersion.Split('+')[1];
-                }
-
-                return assembly.GetName().Version?.ToString() ?? "unknown";
-            }
-            catch
-            {
-                return "unknown";
-            }
-        }
-
-        public static bool IsUpdateAvailable(UpdateInfo remote, string currentCommitHash)
-        {
-            if (remote == null || string.IsNullOrEmpty(remote.CommitHash))
-                return false;
-
-            if (string.IsNullOrEmpty(currentCommitHash))
-                return true;
-
-            return !remote.CommitHash.Equals(currentCommitHash, StringComparison.OrdinalIgnoreCase);
+            return MainWindow.Ver;
         }
     }
 }

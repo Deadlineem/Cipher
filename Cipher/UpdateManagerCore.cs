@@ -32,9 +32,9 @@ namespace Cipher
             string currentExe = Process.GetCurrentProcess().MainModule.FileName;
             string fileName = Path.GetFileName(currentExe);
 
-            if (fileName.Contains("x64", StringComparison.OrdinalIgnoreCase))
+            if (fileName.Contains("x64"))
                 return "Cipher_x64.exe";
-            else if (fileName.Contains("x86", StringComparison.OrdinalIgnoreCase))
+            else if (fileName.Contains("x86"))
                 return "Cipher_x86.exe";
 
             return Environment.Is64BitProcess ? "Cipher_x64.exe" : "Cipher_x86.exe";

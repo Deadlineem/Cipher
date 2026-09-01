@@ -160,7 +160,8 @@ Contributions are welcome!
 1. Fork the repository
 2. Create a feature branch
 3. Build and test your changes
-4. Submit a pull request
+4. Update the `Ver` (version) information in `MainWindow.xaml.cs`
+5. Submit a pull request
 
 ### Areas for Improvement
 - Additional injection methods (Manual Map, Thread Hijacking)

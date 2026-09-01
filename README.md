@@ -3,7 +3,7 @@
 ![GitHub Downloads](https://img.shields.io/github/downloads/Deadlineem/Cipher/total)
 ![License](https://img.shields.io/github/license/Deadlineem/Cipher)
 ![Platform](https://img.shields.io/badge/platform-x64%20%7C%20x86-blue)
-![Version](https://img.shields.io/badge/version-1.0.17-blue)
+![Version](https://img.shields.io/badge/version-1.0.29-green)
 
 <div align="center">
   <table>
@@ -160,7 +160,8 @@ Contributions are welcome!
 1. Fork the repository
 2. Create a feature branch
 3. Build and test your changes
-4. Submit a pull request
+4. Update the `Ver` (version) information in `MainWindow.xaml.cs`
+5. Submit a pull request
 
 ### Areas for Improvement
 - Additional injection methods (Manual Map, Thread Hijacking)
@@ -190,7 +191,6 @@ Always backup your game files before using mods and never mod games online.
 | Resource | Link |
 |----------|------|
 | **Issues** | [GitHub Issues](https://github.com/Deadlineem/Cipher/issues) |
-| **Discussions** | [GitHub Discussions](https://github.com/Deadlineem/Cipher/discussions) |
 
 ---
 

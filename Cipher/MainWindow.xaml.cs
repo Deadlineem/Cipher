@@ -29,7 +29,8 @@ namespace Cipher
         private Timer _processMonitorTimer;
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
-        public static string Ver => "1.0.24";
+        private bool _updateCheckDone = false; // Prevents showing update dialog multiple times
+        public static string Ver => "1.0.25";
         public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -84,8 +85,47 @@ namespace Cipher
             // Auto-update mods on startup ONLY if DLL already exists
             Task.Run(async () => await AutoUpdateMods());
 
+            // Check for app updates on startup (only once)
+            Task.Run(async () => await CheckForAppUpdatesOnStartup());
+
             UpdateModCount();
             StatusMessage = $"✅ Ready - {Mods.Count} mods loaded";
+        }
+
+        private async Task CheckForAppUpdatesOnStartup()
+        {
+            // Wait a moment for the app to fully load
+            await Task.Delay(3000);
+
+            // Prevent multiple checks
+            if (_updateCheckDone)
+                return;
+
+            try
+            {
+                var updateInfo = await UpdateManagerCore.CheckForUpdatesAsync();
+                if (updateInfo == null)
+                    return;
+
+                bool hasUpdate = UpdateManagerCore.IsUpdateAvailable(updateInfo);
+
+                if (hasUpdate)
+                {
+                    _updateCheckDone = true;
+
+                    // Show the update dialog on the UI thread
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        var updateDialog = new UpdateManager();
+                        updateDialog.Owner = this;
+                        updateDialog.ShowDialog();
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Startup update check failed: {ex.Message}");
+            }
         }
 
         private void UpdateAppButton_Click(object sender, RoutedEventArgs e)

@@ -268,10 +268,12 @@ namespace Cipher
                 {
                     FileName = scriptPath,
                     UseShellExecute = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true
                 });
 
-                Application.Current.Shutdown();
+                // Force exit the application
+                Environment.Exit(0);
                 return true;
             }
             catch (Exception ex)
@@ -299,14 +301,19 @@ taskkill /f /im ""{exeName}"" > nul 2>&1
 cd /d ""{exeDir}""
 
 :: Copy new version
-copy ""{newExePath}"" ""{exeName}""
+copy /Y ""{newExePath}"" ""{exeName}""
 
 :: Clean up
 timeout /t 1 /nobreak > nul
 rmdir /s /q ""{tempFolder}"" 2>nul
 
-echo Update complete! Starting Cipher...
+:: Wait a moment for the file system to settle
+timeout /t 3 /nobreak > nul
+
+:: Launch updated application
+echo Launching Cipher...
 start """" ""{currentExe}""
+
 exit
 ";
 

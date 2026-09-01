@@ -298,10 +298,6 @@ taskkill /f /im ""{exeName}"" > nul 2>&1
 
 cd /d ""{exeDir}""
 
-:: Backup current version with version number
-if exist ""{exeNameNoExt}_v{version}_backup.exe"" del ""{exeNameNoExt}_v{version}_backup.exe""
-ren ""{exeName}"" ""{exeNameNoExt}_v{version}_backup.exe""
-
 :: Copy new version
 copy ""{newExePath}"" ""{exeName}""
 

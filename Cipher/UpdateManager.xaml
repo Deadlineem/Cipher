@@ -1,0 +1,277 @@
+﻿<Window x:Class="Cipher.UpdateManager"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="⬆️ Update Cipher" 
+        Height="400" 
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <!-- Main Container with Rounded Corners -->
+    <Border Background="#12121E" 
+            CornerRadius="12,12,12,12" 
+            BorderBrush="#282840" 
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== TITLE BAR ===== -->
+            <Border Grid.Row="0" Background="#1E1E32" CornerRadius="12,12,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                               Text="⬆️ Update Cipher" 
+                               FontFamily="Segoe UI" 
+                               FontSize="14" 
+                               FontWeight="Bold"
+                               Foreground="#DCE0F0"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"/>
+
+                    <Button Grid.Column="1" 
+                            Content="✕" 
+                            Width="28" Height="28" 
+                            FontSize="14"
+                            Background="Transparent" 
+                            Foreground="#8A8AA0"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,12,0"
+                            Click="CloseButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E74C4C"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ===== CONTENT ===== -->
+            <Grid Grid.Row="1" Background="#12121E" Margin="20,16,20,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Status Icon -->
+                <TextBlock Grid.Row="0" 
+                           x:Name="StatusIcon"
+                           Text="🔍" 
+                           FontSize="48" 
+                           HorizontalAlignment="Center"
+                           Foreground="#DCE0F0"
+                           Margin="0,0,0,10"/>
+
+                <!-- Status Text -->
+                <TextBlock Grid.Row="1" 
+                           x:Name="StatusText"
+                           Text="Checking for updates..." 
+                           FontFamily="Segoe UI"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#DCE0F0"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
+
+                <!-- Divider -->
+                <Border Grid.Row="2" Height="1" Background="#282840" Margin="0,0,0,16"/>
+
+                <!-- Current Version -->
+                <Grid Grid.Row="3" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" 
+                               Text="Current:" 
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#969BB4"/>
+                    <TextBlock Grid.Column="1" 
+                               x:Name="CurrentVersionText"
+                               Text="Loading..." 
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               Foreground="#DCE0F0"/>
+                </Grid>
+
+                <!-- New Version -->
+                <Grid Grid.Row="4" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" 
+                               Text="Latest:" 
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#969BB4"/>
+                    <TextBlock Grid.Column="1" 
+                               x:Name="NewVersionText"
+                               Text="Checking..." 
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               Foreground="#89B4FA"/>
+                </Grid>
+
+                <!-- Changelog -->
+                <ScrollViewer Grid.Row="5" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Background="#1A1A2A"
+                              Margin="0,0,0,10">
+                    <TextBlock x:Name="ChangelogText"
+                               Text="Loading changelog..." 
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               Foreground="#B4B9D2"
+                               Padding="12,10,12,10"
+                               TextWrapping="Wrap"/>
+                </ScrollViewer>
+
+                <!-- Progress Bar -->
+                <ProgressBar Grid.Row="6" 
+                             x:Name="UpdateProgress"
+                             Height="4"
+                             Background="#1A1A2A"
+                             Foreground="#89B4FA"
+                             Visibility="Collapsed"
+                             Margin="0,0,0,10"/>
+            </Grid>
+
+            <!-- ===== FOOTER ===== -->
+            <Border Grid.Row="2" Background="#16162A" CornerRadius="0,0,12,12" Padding="16,12,16,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                               x:Name="FooterStatus"
+                               Text="Ready" 
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               Foreground="#787D96"
+                               VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="1" 
+                            x:Name="ActionButton"
+                            Content="Update Now"
+                            Width="100" 
+                            Height="32"
+                            Background="#89B4FA"
+                            Foreground="#12121E"
+                            FontFamily="Segoe UI"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="ActionButton_Click"
+                            Margin="0,0,8,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6"
+                                                    Padding="8,4">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#74C7EC"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="#3A3A5A"/>
+                                        <Setter Property="Foreground" Value="#787D96"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Grid.Column="2" 
+                            Content="Close"
+                            Width="80" 
+                            Height="32"
+                            Background="Transparent"
+                            Foreground="#787D96"
+                            FontFamily="Segoe UI"
+                            FontSize="12"
+                            BorderThickness="1"
+                            BorderBrush="#282840"
+                            Cursor="Hand"
+                            Click="CloseButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="8,4">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#282840"/>
+                                        <Setter Property="Foreground" Value="#DCE0F0"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -19,6 +19,7 @@ namespace Cipher
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+
         private ObservableCollection<ModItem> _mods = new ObservableCollection<ModItem>();
         private ModItem _selectedMod;
         private string _statusMessage = "✅ Ready to Download";
@@ -85,6 +86,13 @@ namespace Cipher
 
             UpdateModCount();
             StatusMessage = $"✅ Ready - {Mods.Count} mods loaded";
+        }
+
+        private void UpdateAppButton_Click(object sender, RoutedEventArgs e)
+        {
+            var updateDialog = new UpdateManager();
+            updateDialog.Owner = this;
+            updateDialog.ShowDialog();
         }
 
         private async Task AutoUpdateMods()

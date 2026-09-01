@@ -293,23 +293,23 @@
                 </Button>
 
                 <Button Content="⚠️ Help" 
-                        Background="#F9E2AF" 
-                        Foreground="#12121E"
-                        FontFamily="Segoe UI" 
-                        FontSize="13" 
-                        FontWeight="Bold"
-                        Padding="14,8,14,8"
-                        Margin="0,0,10,0"
-                        Cursor="Hand"
-                        Click="ShowExclusionGuide_Click">
+        Background="#F9E2AF" 
+        Foreground="#12121E"
+        FontFamily="Segoe UI" 
+        FontSize="13" 
+        FontWeight="Bold"
+        Padding="14,8,14,8"
+        Margin="0,0,10,0"
+        Cursor="Hand"
+        Click="ShowExclusionGuide_Click">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
                                         <Border Background="{TemplateBinding Background}" 
-                                                CornerRadius="8"
-                                                Padding="{TemplateBinding Padding}">
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
                                             <ContentPresenter/>
                                         </Border>
                                     </ControlTemplate>
@@ -321,6 +321,43 @@
                                     <Setter Property="Effect">
                                         <Setter.Value>
                                             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#F9E2AF" Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="⚠️ Update Cipher" 
+        Background="#FFAFF9B7" 
+        Foreground="#12121E"
+        FontFamily="Segoe UI" 
+        FontSize="13" 
+        FontWeight="Bold"
+        Padding="14,8,14,8"
+        Margin="0,0,10,0"
+        Cursor="Hand"
+        Click="UpdateAppButton_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FFE0FCC0"/>
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#FFD3F9AF" Opacity="0.3"/>
                                         </Setter.Value>
                                     </Setter>
                                 </Trigger>

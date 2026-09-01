@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -12,11 +13,12 @@ namespace Cipher
 {
     public class UpdateInfo
     {
-        public string Version { get; set; }          // e.g., "1.0.17"
+        public string Version { get; set; }          // e.g., "1.0.18"
         public string DownloadUrl { get; set; }
-        public string ReleaseDate { get; set; }
+        public string ReleaseDate { get; set; }      // Formatted for USA EST
         public string Changelog { get; set; }
         public string CommitHash { get; set; }
+        public string TagName { get; set; }          // "nightly"
     }
 
     public static class UpdateManagerCore
@@ -24,7 +26,6 @@ namespace Cipher
         private static readonly HttpClient client = new HttpClient();
         private static readonly string UpdateInfoUrl = "https://api.github.com/repos/Deadlineem/Cipher/releases/tags/nightly";
         private static readonly string BaseDownloadUrl = "https://github.com/Deadlineem/Cipher/releases/download/nightly/";
-        private static readonly string OutdatedUrl = "https://github.com/Deadlineem/Cipher/releases/download/nightly/outdated/";
 
         private static string GetExecutableName()
         {
@@ -39,7 +40,7 @@ namespace Cipher
             return Environment.Is64BitProcess ? "Cipher_x64.exe" : "Cipher_x86.exe";
         }
 
-        // Parse version string like "1.0.17" to Version object
+        // Parse version string like "1.0.17" or "v1.0.17" to Version object
         private static Version ParseVersion(string versionStr)
         {
             if (string.IsNullOrEmpty(versionStr))
@@ -48,10 +49,56 @@ namespace Cipher
             // Remove any non-version characters (e.g., "v1.0.17" -> "1.0.17")
             string cleanVersion = versionStr.TrimStart('v', 'V');
 
+            // Remove anything after a space or newline
+            int spaceIndex = cleanVersion.IndexOfAny(new char[] { ' ', '\n', '\r' });
+            if (spaceIndex > 0)
+                cleanVersion = cleanVersion.Substring(0, spaceIndex);
+
             if (Version.TryParse(cleanVersion, out var version))
                 return version;
 
             return null;
+        }
+
+        // Extract version from release body text
+        private static string ExtractVersionFromBody(string body)
+        {
+            if (string.IsNullOrEmpty(body))
+                return null;
+
+            // Look for "Version: X.Y.Z" in the body
+            var match = Regex.Match(body, @"Version:\s*([\d.]+)", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            return null;
+        }
+
+        // Convert UTC to EST and format for USA
+        private static string FormatReleaseDate(string utcDateString)
+        {
+            if (string.IsNullOrEmpty(utcDateString))
+                return "Unknown";
+
+            try
+            {
+                // Parse the UTC date from GitHub (ISO 8601 format)
+                DateTime utcDate = DateTime.Parse(utcDateString, null, System.Globalization.DateTimeStyles.RoundtripKind);
+
+                // Convert to EST (Eastern Standard Time)
+                TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                DateTime estDate = TimeZoneInfo.ConvertTimeFromUtc(utcDate, estZone);
+
+                // Format for USA: "March 15, 2026 at 2:30 PM EST"
+                return estDate.ToString("MMMM d, yyyy 'at' h:mm tt") + " EST";
+            }
+            catch
+            {
+                // Fallback: return the original string if conversion fails
+                return utcDateString;
+            }
         }
 
         public static async Task<UpdateInfo> CheckForUpdatesAsync()
@@ -68,34 +115,39 @@ namespace Cipher
                 string json = await response.Content.ReadAsStringAsync();
                 var release = JsonSerializer.Deserialize<JsonElement>(json);
 
-                // Get tag name (this should be the version)
+                // Get tag name (always "nightly")
                 string tagName = release.GetProperty("tag_name").GetString();
+
+                // Get the release body
+                string body = release.TryGetProperty("body", out var bodyElement)
+                    ? bodyElement.GetString()
+                    : string.Empty;
+
+                // Extract version from body
+                string version = ExtractVersionFromBody(body) ?? "unknown";
 
                 // Get commit hash from target_commitish
                 string commitHash = release.TryGetProperty("target_commitish", out var commitElement)
                     ? commitElement.GetString()
                     : string.Empty;
 
-                // Get changelog/body
-                string changelog = release.TryGetProperty("body", out var bodyElement)
-                    ? bodyElement.GetString()
-                    : string.Empty;
-
-                // Get release date
-                string releaseDate = release.TryGetProperty("published_at", out var dateElement)
+                // Get release date and format it for USA EST
+                string rawDate = release.TryGetProperty("published_at", out var dateElement)
                     ? dateElement.GetString()
                     : string.Empty;
+                string formattedDate = FormatReleaseDate(rawDate);
 
                 string exeName = GetExecutableName();
                 string downloadUrl = $"{BaseDownloadUrl}{exeName}";
 
                 return new UpdateInfo
                 {
-                    Version = tagName ?? "unknown",
+                    Version = version,
+                    TagName = tagName,
                     CommitHash = commitHash,
                     DownloadUrl = downloadUrl,
-                    ReleaseDate = releaseDate,
-                    Changelog = changelog
+                    ReleaseDate = formattedDate,
+                    Changelog = body
                 };
             }
             catch (Exception ex)
@@ -137,7 +189,7 @@ namespace Cipher
                     Directory.CreateDirectory(tempFolder);
 
                 string tempExePath = Path.Combine(tempFolder, exeName);
-                progress?.Report($"Downloading update {update.Version}...");
+                progress?.Report($"Downloading update v{update.Version}...");
 
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Add("User-Agent", "Cipher-Updater");

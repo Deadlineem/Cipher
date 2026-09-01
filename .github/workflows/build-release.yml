@@ -93,6 +93,23 @@ jobs:
             exit 1
         }
 
+    - name: Extract Version from Source
+      id: get_version
+      shell: pwsh
+      run: |
+        $content = Get-Content "Cipher\MainWindow.xaml.cs" -Raw
+        $pattern = 'public static string Ver => "([^"]+)";'
+        $match = [regex]::Match($content, $pattern)
+        
+        if ($match.Success) {
+          $version = $match.Groups[1].Value
+          Write-Host "✅ Extracted version: $version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+        } else {
+          Write-Host "❌ Version not found, using fallback"
+          echo "version=unknown" >> $env:GITHUB_OUTPUT
+        }
+
     - name: Upload x64 EXE as Artifact
       uses: actions/upload-artifact@v4
       with:
@@ -195,6 +212,7 @@ jobs:
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
+          - **Version:** ${{ steps.get_version.outputs.version }}
           - **Commit:** ${{ github.sha }}
           - **Trigger:** ${{ github.event_name }}
 
@@ -237,6 +255,7 @@ jobs:
           - **[Cipher_x86.exe](https://github.com/${{ github.repository }}/releases/download/nightly/Cipher_x86.exe)** - For 32-bit games
 
           ## 📝 Build Information
+          - **Version:** ${{ steps.get_version.outputs.version }}
           - **Commit:** ${{ github.sha }}
           - **Trigger:** ${{ github.event_name }}
 

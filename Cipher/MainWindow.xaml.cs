@@ -30,7 +30,7 @@ namespace Cipher
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
         private bool _updateCheckDone = false; // Prevents showing update dialog multiple times
-        public static string Ver => "1.0.29";
+        public static string Ver => "1.0.30";
         public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 

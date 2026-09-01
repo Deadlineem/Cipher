@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Cipher
 {
@@ -45,11 +44,13 @@ namespace Cipher
                     return;
                 }
 
+                // Get version from MainWindow
+                string currentVersion = MainWindow.Ver;
                 string shortCurrent = _currentCommit.Length > 7 ? _currentCommit.Substring(0, 7) : _currentCommit;
                 string shortNew = _updateInfo.CommitHash.Length > 7 ? _updateInfo.CommitHash.Substring(0, 7) : _updateInfo.CommitHash;
 
-                CurrentVersionText.Text = $"{shortCurrent} ({_updateInfo.Version})";
-                NewVersionText.Text = $"{shortNew} ({_updateInfo.Version})";
+                CurrentVersionText.Text = $"v{currentVersion} ({shortCurrent})";
+                NewVersionText.Text = $"{_updateInfo.Version} ({shortNew})";
 
                 // Check if update is available
                 _isUpdateAvailable = UpdateManagerCore.IsUpdateAvailable(_updateInfo, _currentCommit);

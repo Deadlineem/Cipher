@@ -16,7 +16,7 @@ namespace Cipher
         public string Version { get; set; }          // e.g., "1.0.18"
         public string DownloadUrl { get; set; }
         public string ReleaseDate { get; set; }      // Formatted for USA EST
-        public string Changelog { get; set; }
+        public string Changelog { get; set; }        // Raw Markdown from GitHub
         public string CommitHash { get; set; }
         public string TagName { get; set; }          // "nightly"
     }
@@ -32,9 +32,9 @@ namespace Cipher
             string currentExe = Process.GetCurrentProcess().MainModule.FileName;
             string fileName = Path.GetFileName(currentExe);
 
-            if (fileName.Contains("x64"))
+            if (fileName.Contains("x64", StringComparison.OrdinalIgnoreCase))
                 return "Cipher_x64.exe";
-            else if (fileName.Contains("x86"))
+            else if (fileName.Contains("x86", StringComparison.OrdinalIgnoreCase))
                 return "Cipher_x86.exe";
 
             return Environment.Is64BitProcess ? "Cipher_x64.exe" : "Cipher_x86.exe";
@@ -60,20 +60,83 @@ namespace Cipher
             return null;
         }
 
-        // Extract version from release body text
+        // Extract version from release body text with better Markdown handling
         private static string ExtractVersionFromBody(string body)
         {
             if (string.IsNullOrEmpty(body))
                 return null;
 
-            // Look for "Version: X.Y.Z" in the body
-            var match = Regex.Match(body, @"Version:\s*([\d.]+)", RegexOptions.IgnoreCase);
-            if (match.Success)
+            // Try multiple patterns to find the version
+            string[] patterns = {
+                @"Version:\s*([\d.]+)",                          // Version: 1.0.18
+                @"\*\*Version:\*\*\s*([\d.]+)",                 // **Version:** 1.0.18
+                @"- Version:\s*([\d.]+)",                       // - Version: 1.0.18
+                @"Version\s*([\d.]+)",                          // Version 1.0.18
+                @"v([\d.]+)",                                   // v1.0.18
+                @"(\d+\.\d+\.\d+)"                              // Just the version number
+            };
+
+            foreach (string pattern in patterns)
             {
-                return match.Groups[1].Value;
+                var match = Regex.Match(body, pattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    return match.Groups[1].Value;
+                }
             }
 
             return null;
+        }
+
+        // Clean up Markdown for display in a TextBlock
+        private static string CleanMarkdownForDisplay(string markdown)
+        {
+            if (string.IsNullOrEmpty(markdown))
+                return "No changelog available.";
+
+            string cleaned = markdown;
+
+            // Remove the Build Information section (since we show it separately)
+            cleaned = Regex.Replace(cleaned, @"## 📝 Build Information.*?(?=## |$)", "", RegexOptions.Singleline);
+
+            // Remove the Download section
+            cleaned = Regex.Replace(cleaned, @"## 🚀 Download.*?(?=## |$)", "", RegexOptions.Singleline);
+
+            // Remove the Important section (for brevity)
+            cleaned = Regex.Replace(cleaned, @"## ⚠️ Important.*?(?=## |$)", "", RegexOptions.Singleline);
+
+            // Remove the Usage section
+            cleaned = Regex.Replace(cleaned, @"## 🛠️ Usage.*?(?=## |$)", "", RegexOptions.Singleline);
+
+            // Remove the Antivirus Exclusion section
+            cleaned = Regex.Replace(cleaned, @"## 🛡️ Antivirus Exclusion.*?(?=## |$)", "", RegexOptions.Singleline);
+
+            // Convert Markdown headers to plain text with formatting
+            cleaned = Regex.Replace(cleaned, @"^#+\s*(.*?)$", "• $1", RegexOptions.Multiline);
+
+            // Convert bold **text** to just text (remove the **)
+            cleaned = Regex.Replace(cleaned, @"\*\*(.*?)\*\*", "$1");
+
+            // Convert *italic* to just text
+            cleaned = Regex.Replace(cleaned, @"\*(.*?)\*", "$1");
+
+            // Convert bullet points - keep them as is
+            cleaned = Regex.Replace(cleaned, @"^-\s+", "• ", RegexOptions.Multiline);
+
+            // Convert numbered lists
+            cleaned = Regex.Replace(cleaned, @"^\d+\.\s+", "• ", RegexOptions.Multiline);
+
+            // Remove extra whitespace and blank lines
+            cleaned = Regex.Replace(cleaned, @"\n{3,}", "\n\n");
+
+            // Trim the result
+            cleaned = cleaned.Trim();
+
+            // If nothing left, provide a default message
+            if (string.IsNullOrWhiteSpace(cleaned))
+                return "No detailed changelog available for this version.";
+
+            return cleaned;
         }
 
         // Convert UTC to EST and format for USA
@@ -123,7 +186,7 @@ namespace Cipher
                     ? bodyElement.GetString()
                     : string.Empty;
 
-                // Extract version from body
+                // Extract version from body using improved method
                 string version = ExtractVersionFromBody(body) ?? "unknown";
 
                 // Get commit hash from target_commitish
@@ -137,6 +200,9 @@ namespace Cipher
                     : string.Empty;
                 string formattedDate = FormatReleaseDate(rawDate);
 
+                // Clean the changelog for display
+                string cleanedChangelog = CleanMarkdownForDisplay(body);
+
                 string exeName = GetExecutableName();
                 string downloadUrl = $"{BaseDownloadUrl}{exeName}";
 
@@ -147,7 +213,7 @@ namespace Cipher
                     CommitHash = commitHash,
                     DownloadUrl = downloadUrl,
                     ReleaseDate = formattedDate,
-                    Changelog = body
+                    Changelog = cleanedChangelog
                 };
             }
             catch (Exception ex)

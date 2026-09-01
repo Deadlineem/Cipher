@@ -16,7 +16,7 @@ namespace Cipher
         public string Version { get; set; }          // e.g., "1.0.18"
         public string DownloadUrl { get; set; }
         public string ReleaseDate { get; set; }      // Formatted for USA EST
-        public string Changelog { get; set; }        // Raw Markdown from GitHub
+        public string Changelog { get; set; }        // Cleaned Markdown from GitHub
         public string CommitHash { get; set; }
         public string TagName { get; set; }          // "nightly"
     }
@@ -32,9 +32,9 @@ namespace Cipher
             string currentExe = Process.GetCurrentProcess().MainModule.FileName;
             string fileName = Path.GetFileName(currentExe);
 
-            if (fileName.Contains("x64"))
+            if (fileName.Contains("x64", StringComparison.OrdinalIgnoreCase))
                 return "Cipher_x64.exe";
-            else if (fileName.Contains("x86"))
+            else if (fileName.Contains("x86", StringComparison.OrdinalIgnoreCase))
                 return "Cipher_x86.exe";
 
             return Environment.Is64BitProcess ? "Cipher_x64.exe" : "Cipher_x86.exe";
@@ -60,7 +60,7 @@ namespace Cipher
             return null;
         }
 
-        // Extract version from release body text with better Markdown handling
+        // Extract version from release body text
         private static string ExtractVersionFromBody(string body)
         {
             if (string.IsNullOrEmpty(body))
@@ -88,7 +88,7 @@ namespace Cipher
             return null;
         }
 
-        // Clean up Markdown for display in a TextBlock
+        // Clean up Markdown for display in a TextBlock - PRESERVES ALL CONTENT
         private static string CleanMarkdownForDisplay(string markdown)
         {
             if (string.IsNullOrEmpty(markdown))
@@ -96,20 +96,8 @@ namespace Cipher
 
             string cleaned = markdown;
 
-            // Remove the Build Information section (since we show it separately)
+            // Remove the Build Information section (since we show it separately in the UI)
             cleaned = Regex.Replace(cleaned, @"## 📝 Build Information.*?(?=## |$)", "", RegexOptions.Singleline);
-
-            // Remove the Download section
-            cleaned = Regex.Replace(cleaned, @"## 🚀 Download.*?(?=## |$)", "", RegexOptions.Singleline);
-
-            // Remove the Important section (for brevity)
-            cleaned = Regex.Replace(cleaned, @"## ⚠️ Important.*?(?=## |$)", "", RegexOptions.Singleline);
-
-            // Remove the Usage section
-            cleaned = Regex.Replace(cleaned, @"## 🛠️ Usage.*?(?=## |$)", "", RegexOptions.Singleline);
-
-            // Remove the Antivirus Exclusion section
-            cleaned = Regex.Replace(cleaned, @"## 🛡️ Antivirus Exclusion.*?(?=## |$)", "", RegexOptions.Singleline);
 
             // Convert Markdown headers to plain text with formatting
             cleaned = Regex.Replace(cleaned, @"^#+\s*(.*?)$", "• $1", RegexOptions.Multiline);
@@ -186,7 +174,7 @@ namespace Cipher
                     ? bodyElement.GetString()
                     : string.Empty;
 
-                // Extract version from body using improved method
+                // Extract version from body
                 string version = ExtractVersionFromBody(body) ?? "unknown";
 
                 // Get commit hash from target_commitish
@@ -200,7 +188,7 @@ namespace Cipher
                     : string.Empty;
                 string formattedDate = FormatReleaseDate(rawDate);
 
-                // Clean the changelog for display
+                // Clean the changelog for display (preserves all content)
                 string cleanedChangelog = CleanMarkdownForDisplay(body);
 
                 string exeName = GetExecutableName();

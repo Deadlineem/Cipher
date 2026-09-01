@@ -43,7 +43,7 @@ namespace Cipher
 
                 string currentVersion = MainWindow.Ver;
                 CurrentVersionText.Text = $"v{currentVersion}";
-                NewVersionText.Text = $"{_updateInfo.Version}";
+                NewVersionText.Text = $"v{_updateInfo.Version}";
 
                 // Check if update is available using version comparison
                 _isUpdateAvailable = UpdateManagerCore.IsUpdateAvailable(_updateInfo);
@@ -66,8 +66,6 @@ namespace Cipher
                 {
                     SetStatus("✅", "Up to Date!", $"You're running the latest version (v{currentVersion})");
                     ChangelogText.Text = "You are already running the latest version of Cipher.";
-                    ActionButton.Content = "Close";
-                    ActionButton.IsEnabled = true;
                     FooterStatus.Text = "No update needed";
                 }
             }
@@ -75,8 +73,6 @@ namespace Cipher
             {
                 SetStatus("❌", "Error checking for updates", ex.Message);
                 ChangelogText.Text = $"Error: {ex.Message}";
-                ActionButton.Content = "Close";
-                ActionButton.IsEnabled = true;
             }
         }
 

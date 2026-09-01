@@ -30,7 +30,7 @@ namespace Cipher
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
         private bool _updateCheckDone = false; // Prevents showing update dialog multiple times
-        public static string Ver => "1.0.27";
+        public static string Ver => "1.0.28";
         public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -95,7 +95,7 @@ namespace Cipher
         private async Task CheckForAppUpdatesOnStartup()
         {
             // Wait a moment for the app to fully load
-            await Task.Delay(3000);
+            await Task.Delay(1000);
 
             // Prevent multiple checks
             if (_updateCheckDone)

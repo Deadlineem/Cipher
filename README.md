@@ -3,7 +3,7 @@
 ![GitHub Downloads](https://img.shields.io/github/downloads/Deadlineem/Cipher/total)
 ![License](https://img.shields.io/github/license/Deadlineem/Cipher)
 ![Platform](https://img.shields.io/badge/platform-x64%20%7C%20x86-blue)
-![Version](https://img.shields.io/badge/version-1.0.17-blue)
+![Version](https://img.shields.io/badge/version-1.0.29-green)
 
 <div align="center">
   <table>

@@ -29,8 +29,12 @@ namespace Cipher
         private Timer _processMonitorTimer;
         private bool _isInitialLoad = true;
         private bool _isRefreshing = false;
-        private bool _updateCheckDone = false; // Prevents showing update dialog multiple times
-        public static string Ver => "1.0.30";
+        private bool _updateCheckDone = false;
+
+        public static string Ver => "1.0.31";
+        // ALWAYS alter when submitting changes to GitHub. This is the version that will be displayed in the app and used for update checks.
+        // If this version is not updated, the app will assume the build is identical and not check for updates or prompt correctly if one exists.
+        // Format: Major.Minor.Patch (e.g., 1.0.30 or 1.2.10)
         public static string BuildVer => $"📦 Build Version: {Ver}";
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -226,10 +230,10 @@ namespace Cipher
             Mods.Add(new ModItem
             {
                 Id = 1,
-                Name = "Terminus (RDR2)",
+                Name = "Helix (RDR2)",
                 GameTask = "RDR2.exe",
                 Status = ModStatus.Ready,
-                DownloadUrl = "https://github.com/Deadlineem/HorseMenu/releases/download/nightly/Terminus.dll"
+                DownloadUrl = "https://github.com/Deadlineem/Helix/releases/download/nightly/Helix.dll"
             });
             Mods.Add(new ModItem
             {

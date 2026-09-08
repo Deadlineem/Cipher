@@ -31,7 +31,7 @@ namespace Cipher
         private bool _isRefreshing = false;
         private bool _updateCheckDone = false;
 
-        public static string Ver => "1.0.31";
+        public static string Ver => "1.0.32";
         // ALWAYS alter when submitting changes to GitHub. This is the version that will be displayed in the app and used for update checks.
         // If this version is not updated, the app will assume the build is identical and not check for updates or prompt correctly if one exists.
         // Format: Major.Minor.Patch (e.g., 1.0.30 or 1.2.10)
